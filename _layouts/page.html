@@ -1,0 +1,36 @@
+---
+layout: default
+---
+<div class="post">
+
+  <header class="post-header">
+    <h1>{{ page.title }}</h1>
+  </header>
+
+  <article class="post-content">
+  {{ content }}
+  </article>
+
+  {% if page.comments %}
+  <div id="gitmentContainer"></div>
+  <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+  <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+  <script>
+  var gitment = new Gitment({
+      owner: 'Dynmi',
+      repo: 'https://github.com/Dynmi/Dynmi.github.io',
+      oauth: {
+          client_id: 'b47f56c253316613f70e',
+          client_secret: 'b78d63e13700652a45561898078466ad9ee1c77e',
+      },
+  });
+  gitment.render('gitmentContainer');
+  </script>
+  {% endif %}
+  
+</div>
+
+<!-- mathjax -->
+{% if page.mathjax %}
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+{% endif %}

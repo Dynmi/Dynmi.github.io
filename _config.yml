@@ -1,0 +1,18 @@
+# Site settings
+title: Haris Wang blog
+email: 
+description: "Musings of a Computer Scientist."
+baseurl: ""
+url: "http://dynmi.github.io"
+twitter_username: Dynmi
+github_username:  Dynmi
+
+# Build settings
+markdown: kramdown
+permalink: pretty
+
+highlighter: rouge
+kramdown:
+  input: GFM
+  auto_ids: true
+  syntax_highlighter: rouge
