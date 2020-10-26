@@ -29,13 +29,19 @@ Click "metadata" -> "SSH Keys" -> "Edit", and add your public-key here as instru
 
 ## Step 3: Adjust the configs as what the fuck you want to
 
-Connect to the target VPS, then type command ```vim /etc/ssh/sshd_config``` to open ssh config file.
+Connect to the target VPS and switch user to ROOT, then type command ```vim /etc/ssh/sshd_config``` to open ssh config file.
 
 - Change ```PermitRootLogin``` to ```yes``` 
 - Change ```PubkeyAuthentication``` to ```yes```
 - If you want Password Authentication, change ```PasswordAuthentication``` to ```yes``` and ensure you have set password for user.
 
+Then restart your VPS.
+
 ## Step 4: Enjoy it
 
+Fetch the username of your SSH key(mine is haris), then type the command below to connect to your VPS:
+```
+$ssh haris@xxx.xxx.xxx.xxx
+```
 
  
