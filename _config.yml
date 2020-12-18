@@ -1,11 +1,9 @@
 # Site settings
-title: Haris Wang blog
+title: Haris Wang's Blog
 email: 
-description: "Musings of a Computer Scientist."
+description: "Man keens on better algorithm."
 baseurl: ""
 url: "http://dynmi.github.io"
-twitter_username: Dynmi
-github_username:  Dynmi
 
 # Build settings
 markdown: kramdown
