@@ -18,6 +18,5 @@ includelink: true
 - [English Version](https://github.com/Dynmi/Dynmi.github.io/blob/master/resume_wanghan_EN.pdf)
 - [中文简历](https://github.com/Dynmi/Dynmi.github.io/blob/master/resume_wanghan_CN.pdf)
 
-</br>
 
 Updated in Jan 2021
