@@ -1,9 +1,9 @@
 ---
 layout: post
 comments: false
-title:  "std::move() & std::forward() in C++"
+title:  "std::move & std::forward in C++"
 excerpt: "..."
-date:   2021-1-11 19:00:00
+date:   2021-12-3 19:00:00
 mathjax: false
 ---
 
