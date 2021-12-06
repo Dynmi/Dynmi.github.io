@@ -122,6 +122,15 @@ CMyClass b(a);              // 调用CMyClass(CMyClass& that)
 CMyClass c(std::move(a));   // 调用CMyClass(CMyClass&& that)
 ```
 
+这是std::move()的原型：
+```
+template <typename T>
+typename remove_reference<T>::type&& move(T&& t)
+{
+	return static_cast<typename remove_reference<T>::type&&>(t);
+}
+```
+
 “右值引用”和“左值引用”有多大区别？从内存层次看，并没有太大区别，都类似于指针：
 ```
     int&& b = 20;
@@ -139,13 +148,99 @@ CMyClass c(std::move(a));   // 调用CMyClass(CMyClass&& that)
 	movl	%eax, -20(%rbp)
 ```
 
-`int&& b = 20;` 和 `int temp = 20; int& b = temp` 以及 `int temp = 20; int* b = &temp;` 从内存层次看是一样的！
+以下三者从内存层次看，是等价的：
+- `int&& b = 20;`
+- `int temp = 20; int& b = temp;`
+- `int temp = 20; int* b = &temp;` 
 
+右值引用的出现还会带来什么问题呢？接下来继续探索。
 
-## std::forward()的用途
+## std::forward()的由来
 
-xxx
+在C++模板中，`class T`的T是未定类型。对于`void func(T&& a)`，当T为`int&&`类型时，函数内的参数即推理为`int&&&& a`；当T为`int&`类型时，函数内的参数即推理为`int&&& a`。从内存层次思考，我们发现无论如何叠加，都可以化简为“左值引用”或“右值引用”。这里总结出这样的规则（引用折叠）：
 
+- 所有的右值引用折叠到右值引用上仍然是右值引用。
+- 所有涉及了左值引用的叠加都将折叠为左值引用。
+
+根据这个规律，`void func(T& a)`的实参只能是左值。`void func(T&& a)`的实参可能是左值，也可能是右值。因为程序编译的时候并不会判断`T`类型，执行的时候才去判断，因此C++将`void func(T&& a)`设计成：
+- 不论`T&&`的折叠结果是什么，`T&& a`既可以接受左值，也可以接受右值。
+- 在`func()`内，a都是一个左值，a类似于一个指针，指向实参的内存地址。
+
+我们习惯性将`T&& a`称为“万能引用”（universal reference）。
+
+但是有些时候，在`func()`里，我们还想知道在调用`func()`时，实参是左值还是右值：
+```
+template<class T>
+void constructor(T& x) {
+	...
+}
+
+template<class T>
+void constructor(T&& x) {
+	...
+}
+
+template<class T>
+void func(T&& a) {
+
+	//这里想调用constructor
+
+}
+```
+如果直接写`constructor(a)`的话，编译器会默认匹配到`constructor(T& x)`。前面说了，在`func(T&& a)`内，`a`是一个左值。
+
+这里我们就需要`std::forward()`了！ `std::forard()`根据推导做static_cast。我们这样写：`constructor(std::forward<T>(a))`。
+
+那么当`func(T&& a)`的实参是右值时，就会匹配`constructor(T&& x)`，当`func(T&& a)`的实参是左值时，就会匹配`constructor(T& x)`。
+
+以下是C++ Reference中的示例：
+
+```
+#include <iostream>
+#include <memory>
+#include <utility>
+ 
+struct A {
+    A(int&& n) { std::cout << "rvalue overload, n=" << n << "\n"; }
+    A(int& n)  { std::cout << "lvalue overload, n=" << n << "\n"; }
+};
+ 
+class B {
+public:
+    template<class T1, class T2, class T3>
+    B(T1&& t1, T2&& t2, T3&& t3) :
+        a1_{std::forward<T1>(t1)},
+        a2_{std::forward<T2>(t2)},
+        a3_{std::forward<T3>(t3)}
+    {
+    }
+ 
+private:
+    A a1_, a2_, a3_;
+};
+ 
+template<class T, class U>
+std::unique_ptr<T> make_unique1(U&& u)
+{
+    return std::unique_ptr<T>(new T(std::forward<U>(u)));
+}
+ 
+template<class T, class... U>
+std::unique_ptr<T> make_unique2(U&&... u)
+{
+    return std::unique_ptr<T>(new T(std::forward<U>(u)...));
+}
+ 
+int main()
+{   
+    auto p1 = make_unique1<A>(2); // rvalue
+    int i = 1;
+    auto p2 = make_unique1<A>(i); // lvalue
+ 
+    std::cout << "B\n";
+    auto t = make_unique2<B>(2, i, 3);
+}
+```
 ## Reference
 - https://en.cppreference.com/w/cpp/language/move_constructor
 - https://en.cppreference.com/w/cpp/utility/move
