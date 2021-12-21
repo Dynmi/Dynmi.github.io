@@ -6,7 +6,7 @@ includelink: true
 ---
 
 ## Brief Introduction
-- Haris Wang is a last-year undergraduate in Sichuan University now. He focus on machine learning algorithm research and related applications.
+- Haris Wang is a final year student of computer science in Sichuan University. He focus on machine learning algorithm research and related applications.
 - Feel free to contact [dynmi@foxmail.com](dynmi@foxmail.com)
 
 

@@ -243,6 +243,20 @@ int main()
     auto t = make_unique2<B>(2, i, 3);
 }
 ```
+
+## 一个简单例子 std::unique_ptr 
+
+不同于std::shared_ptr，std::unique_ptr只有移动构造，没有拷贝构造。
+```
+// Animal是一个类
+
+std::shared_ptr<Animal> s_ptr1 = std::make_shared<Animal>(2, 33);
+std::shared_ptr<Animal> s_ptr2 = s_ptr1; // s_ptr1和s_ptr2内的成员指针保存的地址是一样的，shared_ptr通过引用计数来管理这块内存的生命周期
+
+std::unique_ptr<Animal> u_ptr1 = new Animal(2, 33);
+std::unique_ptr<Animal> u_ptr2 = std::move(u_ptr1); // u_ptr1内的成员指针置空，u_ptr2接管了u_ptr1内的内存指针
+```
+
 ## Reference
 - https://en.cppreference.com/w/cpp/language/move_constructor
 - https://en.cppreference.com/w/cpp/utility/move
