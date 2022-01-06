@@ -1,11 +1,23 @@
 ---
 layout: post
 comments: false
-title:  "对角矩阵和正交矩阵"
+title:  "Diagonal Matrix and Orthogonal Matrix"
 excerpt: "..."
 date:   2022-01-06 00:37:00
-mathjax: false
+mathjax: true
 ---
+
+<head>
+    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+            inlineMath: [['$','$']]
+            }
+        });
+    </script>
+</head>
 
 # 以线性变换视角看矩阵
 
