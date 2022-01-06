@@ -11,22 +11,24 @@ layout: default
   {{ content }}
   </article>
 
-  {% if page.comments %}
-  <div id="gitmentContainer"></div>
-  <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
-  <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
-  <script>
-  var gitment = new Gitment({
-      owner: 'Dynmi',
-      repo: 'https://github.com/Dynmi/Dynmi.github.io',
-      oauth: {
-          client_id: 'b47f56c253316613f70e',
-          client_secret: 'b78d63e13700652a45561898078466ad9ee1c77e',
-      },
-  });
-  gitment.render('gitmentContainer');
-  </script>
-  {% endif %}
+  <!-- gitment comments -->
+  <div>
+    {% if page.comments %}
+    <div id="gitalk_container"></div>
+    <script>
+     const gitalk = new Gitalk({
+       clientID: 'b47f56c253316613f70e',
+       clientSecret: '94ddc703708b8b274c3fbb2156385d149bf3ecb2',
+       owner: 'Dynmi',
+       repo: 'Dynmi.github.io',
+       admin: ['Dynmi'],
+       id: location.pathname,      // Ensure uniqueness and length less than 50
+       distractionFreeMode: false  // Facebook-like distraction free mode
+     })
+     gitalk.render('gitalk_container')
+    </script>
+    {% endif %}
+  </div>
   
 </div>
 
