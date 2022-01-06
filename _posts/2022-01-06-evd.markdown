@@ -53,7 +53,23 @@ mathjax: true
 >> + 结合 $M=A_{nn}diag_{n}(\lambda)A_{nn}^{-1}$，即有$A^{T} = A^{-1}$。
 >> + 故A为正交矩阵，故 $M=A_{nn}diag_{n}(\lambda)A_{nn}^{T}$
 
+EVD算法：
+
+---
+
+**Input**: M
+
+**Output**: A, $diag_{n}(\lambda)$
+
+计算$\lambda$，根据$det(M-\lambda I) = 0$
+
+
+将$\lambda$的不同解分别代入$(M-\lambda I)a = 0$，计算出各自对应的向量$a$。组成矩阵A。
+
+---
+
 Ok，相信你已经能接受认可以上所述。我们从线性代数的角度找到了这个规律，那就可以在任何满足充要条件的场景下使用这个规律了。
+
 
 [PageRank算法](https://zh.wikipedia.org/wiki/PageRank)
 
@@ -71,9 +87,27 @@ Ok，相信你已经能接受认可以上所述。我们从线性代数的角度
 > + **得到结论**：存在正交矩阵 $U_{mm}$、正交矩阵 $V_{nn}$、伪对角矩阵 $\Sigma_{mn}$，$M=UBV^{T}$
 > + **证明过程**：
 >> + 易证 $(AB)^{T} = B^{T} A^{T}$，故有$(M^{T}M)^{T} = M^{T}M$。从这里看出 $M^{T}M$是对称矩阵；
->> + 因此$M^{T}M$可以进行正交分解，即存在正交阵 $U_{nn}$和对角阵 $diag_{n}(\lambda)$使得 $M^{T}M = U_{nn}^{T}\Sigma_{nn}U_{nn}$；
->> + 把上式进一步推导，存在正交阵 $V_{mm}$和伪对角矩阵 $\Sigma_{mn}$（满足$\Sigma \Sigma^{T} = diag_{n}(\lambda)$），使得 $M^{T}M = U_{nn}^{T} (\Sigma_{mn})^{T} V_{mm} V_{mm}^{T} \Sigma_{mn} U_{nn}$；
+>> + 因此$M^{T}M$可以进行正交分解，即存在正交阵 $V_{nn}$和对角阵 $diag_{n}(\lambda)$使得 $M^{T}M = V_{nn} diag_{n}(\lambda) V_{nn}^{T}$；
+>> + 把上式进一步推导，存在正交阵 $U_{mm}$和伪对角矩阵 $\Sigma_{mn}$（满足$\Sigma \Sigma^{T} = diag_{n}(\lambda)$），使得 $M^{T}M = V_{nn} (\Sigma_{mn})^{T} U_{mm}^{T} U_{mm} \Sigma_{mn} V_{nn}^{T} = (U_{mm} \Sigma_{mn} V_{nn}^{T})^{T} (U_{mm} \Sigma_{mn} V_{nn}^{T})$；
 >> + 从而有 $M=U \Sigma V^{T}$
+
+SVD算法：
+
+---
+
+**Input**: M
+
+**Output**: U, $\Sigma$, V
+
+计算$S = MULTIPLY(M, M^{T})$
+
+计算$V,diag_{n}(\lambda) = EVD(S)$
+
+计算$\Sigma_{mn}$，根据$\Sigma_{mn} (\Sigma_{mn})^{T} = diag_{n}(\lambda)$
+
+计算$U = MV(\Sigma)^{T}$
+
+---
 
 Ok，相信你已经能接受认可以上所述。我们从线性代数的角度找到了这个规律，那就可以在任何满足充要条件的场景下使用这个规律了。
 
