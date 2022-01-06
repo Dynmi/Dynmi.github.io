@@ -20,4 +20,24 @@
       ga('send', 'pageview');
     </script>
 
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+          tex2jax: {
+              skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+              inlineMath: [ ['$','$'] ],
+              <!--不需要displayMath(行外公式 我也不知道为什么)-->
+              processEscapes: true
+          },
+          TeX: {
+              equationNumbers: {
+                  autoNumber: "AMS"
+              },
+              <!--自定义的宏-->
+              Macros: {
+                  lbrace: "\\{",
+                  rbrace: "\\}"
+              }
+          }
+      });
+    </script>
 </head>
