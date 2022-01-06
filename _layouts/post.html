@@ -2,6 +2,9 @@
 layout: default
 ---
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
 <div class="post">
 
   <!-- mathjax -->
@@ -38,12 +41,7 @@ layout: default
   <!-- gitment comments -->
   <div>
     {% if page.comments %}
-    <section class="post-footer-item comment">
     <div id="gitalk_container"></div>
-    <div id="disqus_thread"></div>
-    </section>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
-    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
     <script>
      const gitalk = new Gitalk({
        clientID: 'b47f56c253316613f70e',
