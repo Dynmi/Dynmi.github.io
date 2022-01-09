@@ -1,6 +1,6 @@
 ---
 layout: post
-comments: false
+comments: true
 title:  "Memory Management of C++ Object Model"
 excerpt: "..."
 date:   2021-12-13 23:40

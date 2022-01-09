@@ -1,6 +1,6 @@
 ---
 layout: post
-comments: false
+comments: true
 title:  "std::move & std::forward in C++"
 excerpt: "..."
 date:   2021-12-3 19:00:00
