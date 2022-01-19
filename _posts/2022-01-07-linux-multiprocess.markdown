@@ -13,7 +13,12 @@ mathjax: true
 
 严谨地讲，linux中任务的粒度是thread，而不是process。在linux中，task_struct是和thread一一对应，而不是和process一一对应！
 
+进程的主线程的tid作为进程pid。诞生时，进程（主线程）是由父进程通过fork系列系统调用来创建，线程则由主线程pthread_create()创建。init进程和kthreadd进程在内核加载启动的时候由系统创建。
+用户进程均是init进程的子孙，内核线程都是kthreadd的子孙。
+
 因此，不同于其他人的叙述，下面我将多处使用“thread”来表示一个任务。
+
+## 内核thread和用户thread的区别
 
 ## thread生命周期的设计
 
@@ -22,10 +27,8 @@ mathjax: true
 </div>
 
 当一个thread被启动，首先是TASK_RUNNING状态，被加入就绪队列中等待被调度到CPU执行。
-转入TASK_INTERRUPTIBLE状态
-接收到SIGSTOP信号，转入TASK_STOPPED状态
-转入TASK_TRACED状态
 
+各状态的出现频率从高到低依次是：
 
 TASK_RUNNING（R）：
 
@@ -50,19 +53,16 @@ EXIT_DEAD（X）：进程销毁前的很短暂的一个状态，几乎无法被p
 
 ### 共享内存SHARED_MEMORY
 
-
-## 内核thread和用户thread的区别
+### 锁
 
 ## 多任务间如何分配调度CPU
 
 CPU核心数<<就绪任务数
 
 SCHED_NORMAL 普通进程
+
 SCHED_RR/SCHED_FIFO 实时进程
 
 goodness()
 
 多CPU等待队列负载均衡
-
-
-## 
