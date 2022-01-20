@@ -94,7 +94,9 @@ struct task_struct {
 
 因为CPU核心数<<待执行任务数，因此需要优越的CPU分配调度算法，以平衡多个task的CPU占用。
 
+每个CPU都配有4*2=8个任务运行队列。分别是stop_sched_class>rt_sched_class>fair_sched_class>idle_sched_class这四种优先级的任务active队列和exipred队列。每当一个task的现有时间片全部用完，即将它加入相应优先级的expired队列并重新分配时间片。直到所有task都被移动到expired队列，便将active队列和expired队列指针交换。
 
+#### task_struct::policy
 task_struct::policy决定了task的调度优先级策略。
 - SCHED_OTHER 普通任务，基于红黑树的完全公平调度算法；使用task_struct::static_prio（nice系统调用修改的就是static_prio）
 - SCHED_RR 实时任务；使用task_struct::rt_priority和task_struct::prio
@@ -102,14 +104,13 @@ task_struct::policy决定了task的调度优先级策略。
 
 task创建时policy默认继承父进程的policy，顺便提一句，init和kthreadd的policy都是SCHED_OTHER。task可以调用sched_setscheduler()来修改其调度优先级策略。后面也可以用`chrt`命令修改task的调度优先级策略。
 
+#### task_struct::static_prio 和 task_struct::rt_priority
+...
+#### task_struct::prio
+...
+#### schedule()
 
-就绪任务等待队列有4*2=8个。分别是stop_sched_class>rt_sched_class>fair_sched_class>idle_sched_class这四种优先级的任务active队列和exipred队列。每当一个task的现有时间片全部用完，即将它加入相应优先级的expired队列并重新分配时间片。直到所有task都被移动到expired队列，便将active队列和expired队列指针交换。
-
-`goodness()`
-
-多CPU等待队列负载均衡
-
-以上都由schedule()函数来完成。
+schedule()函数完成任务CPU调度的工作。
 schedule()流程:
 - 关闭当前 CPU 的抢占功能；
 - 如果当前 CPU 的运行队列中不存在任务，调用 idle_balance 从其他 CPU 的运行队列中取一部分执行；
