@@ -13,7 +13,7 @@ mathjax: true
 
 严谨地讲，linux中任务的粒度是thread，而不是process。在linux中，task_struct是和thread一一对应，而不是和process一一对应！
 
-进程的主线程的tid作为进程pid。新进程（主线程）是由父进程通过fork系列系统调用来创建，新线程则由同进程内其他线程pthread_create()创建。init task和kthreadd task在内核加载启动的时候由系统idle task创建。
+进程的主线程的spid作为进程pid。新进程（主线程）是由父进程通过fork系列系统调用来创建，新线程则由同进程内其他线程pthread_create()创建。init task和kthreadd task在内核加载启动的时候由系统idle task创建。
 user task均是init（pid=1）的子孙，kernel task都是kthreadd（pid=2）的子孙。
 
 因此，不同于其他人的叙述，下面我将多处使用“task”来表示一个线程，即一个任务主体。
@@ -86,20 +86,39 @@ struct task_struct {
 
 ### 共享内存shared_memory
 
+将同一块用户区内存空间分别映射到多个task的VM表里。多个task需要通过信号量等来互斥地操作同一块内存。
+
 ### 锁
 
 ## 多任务间如何分配调度CPU
 
 因为CPU核心数<<待执行任务数，因此需要优越的CPU分配调度算法，以平衡多个task的CPU占用。
 
-SCHED_NORMAL 普通进程
 
-SCHED_RR/SCHED_FIFO 实时进程
+task_struct::policy决定了task的调度优先级策略。
+- SCHED_OTHER 普通任务，基于红黑树的完全公平调度算法；使用task_struct::static_prio（nice系统调用修改的就是static_prio）
+- SCHED_RR 实时任务；使用task_struct::rt_priority和task_struct::prio
+- SCHED_FIFO 实时任务；使用task_struct::rt_priority和task_struct::prio
 
-goodness()
+task创建时policy默认继承父进程的policy，顺便提一句，init和kthreadd的policy都是SCHED_OTHER。task可以调用sched_setscheduler()来修改其调度优先级策略。后面也可以用`chrt`命令修改task的调度优先级策略。
+
+
+就绪任务等待队列有4*2=8个。分别是stop_sched_class>rt_sched_class>fair_sched_class>idle_sched_class这四种优先级的任务active队列和exipred队列。每当一个task的现有时间片全部用完，即将它加入相应优先级的expired队列并重新分配时间片。直到所有task都被移动到expired队列，便将active队列和expired队列指针交换。
+
+`goodness()`
 
 多CPU等待队列负载均衡
 
+以上都由schedule()函数来完成。
+schedule()流程:
+- 关闭当前 CPU 的抢占功能；
+- 如果当前 CPU 的运行队列中不存在任务，调用 idle_balance 从其他 CPU 的运行队列中取一部分执行；
+- 调用 pick_next_task 从当前READY任务列表里选择优先级最高的任务；
+- 调用 context_switch 切换运行的上下文，包括寄存器的状态和堆栈；
+- 重新开启当前 CPU 的抢占功能；
+
 schedule()是如何被执行的？ 
-当没有屏蔽中断的RUNNING中的task收到时钟中断，timer_interrupt()会被执行。timer_interrupt()中会调用schedule()。
+
+- （抢占调度）当没有屏蔽中断的RUNNING中的task收到时钟中断，timer_interrupt()会被执行。timer_interrupt()中先调用schedule_tick()判断是否应该抢占，进而调用schedule()。
 请注意，一个task在进行系统调用（内部触发）和中断（外设触发）时都只是调用内核API而已，此时还是该task在CPU上运行着，只是从“用户态”转到了“内核态”。
+- （非抢占调度）当RUNNING的task主动放弃CPU切换到其他状态时，schedule()也会被调用。
