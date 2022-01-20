@@ -98,9 +98,9 @@ struct task_struct {
 
 #### task_struct::policy
 task_struct::policy决定了task的调度优先级策略。
-- SCHED_OTHER 普通任务，基于红黑树的完全公平调度算法；使用task_struct::static_prio（nice系统调用修改的就是static_prio）
-- SCHED_RR 实时任务；使用task_struct::rt_priority和task_struct::prio
-- SCHED_FIFO 实时任务；使用task_struct::rt_priority和task_struct::prio
+- SCHED_OTHER 分时任务；基于红黑树的完全公平调度算法；每次重新获取时间片只得到少量，自己阻塞或者现有时间片耗尽时，主动放弃CPU；周期检查时若等待队列存在更高优先级的task，则被抢占CPU。
+- SCHED_RR 实时任务；每次重新获取时间片只得到少量，自己阻塞或者现有时间片耗尽时，主动放弃CPU；周期检查时若等待队列存在更高优先级的task，则被抢占CPU。
+- SCHED_FIFO 实时任务；自己阻塞时，主动放弃CPU；周期检查时若等待队列存在更高优先级的task，则被抢占CPU。
 
 task创建时policy默认继承父进程的policy，顺便提一句，init和kthreadd的policy都是SCHED_OTHER。task可以调用sched_setscheduler()来修改其调度优先级策略。后面也可以用`chrt`命令修改task的调度优先级策略。
 
