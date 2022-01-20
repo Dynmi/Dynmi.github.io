@@ -20,6 +20,23 @@ user task均是init（pid=1）的子孙，kernel task都是kthreadd（pid=2）�
 
 ## user task VS kernel task
 
+两者性质上相同，在竞争资源的时候都是按照统一的规则（CPU的优先级）来竞争。
+
+user task都是直接或间接由用户启动触发，而kernel task多数由内核自动触发，也可由user task触发。
+
+user task在“内核态”时内存限制在内核区，在“用户态”时内存限制在用户区。kernel task内存始终限制在内核区，其task_struct->mm为NULL。
+
+kernel task常用的有：
+
+[kswapd0]：根据页低阈值(min_free_bytes)的配置，定期回收内存
+
+[ksoftirqd]：处理软中断的内核线程，每个CPU都有一个，当看到此线程对CPU使用率较高时，意味着系统在进行大理的软中断操作，性能会有问题
+
+[kworker]：用于执行内核工作队列，分为绑定 CPU （名称格式为 kworker/CPU86330）和未绑定 CPU（名称格式为 kworker/uPOOL86330）两类。
+
+[migration]：在负载均衡过程中，把进程迁移到 CPU 上。每个 CPU 都有一个 migration 内核线程。
+
+
 ## task生命周期的设计
 
 <div class="imgcap">
