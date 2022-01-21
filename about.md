@@ -6,7 +6,8 @@ includelink: true
 ---
 
 ## Brief Introduction
-- Haris Wang is a final year student of computer science in Sichuan University. He focus on machine learning algorithm research and related applications.
+- 王涵 is a final year student of computer science in Sichuan University. 
+- Work at ByteDance AdsInfra, 2021.6 ~ 2021.11
 - Feel free to contact [dynmi@foxmail.com](dynmi@foxmail.com)
 
 
