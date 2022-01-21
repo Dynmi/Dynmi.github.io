@@ -100,11 +100,11 @@ SVD算法：
 
 **Output**: U, $\Sigma$, V
 
-计算$S = MULTIPLY(M, M^{T})$
+计算$S$ = MULTIPLY( $M$, $M^{T}$ )
 
-计算$V,diag_{n}(\lambda) = EVD(S)$
+计算$V$, $diag_{n}(\lambda)$ = EVD( $S$ )
 
-计算$\Sigma_{mn}$，根据$\Sigma_{mn} (\Sigma_{mn})^{T} = diag_{n}(\lambda)$
+计算$\Sigma_{mn}$，根据$(\Sigma_{mn})^{T} \Sigma_{mn} = diag_{n}(\lambda)$
 
 计算$U = MV(\Sigma)^{T}$
 
