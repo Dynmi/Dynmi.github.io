@@ -1,7 +1,7 @@
 ---
 layout: post
 comments: true
-title:  "the Architecture of MultiTasking in Operating System"
+title:  "the Architecture of MultiTasking in Linux"
 excerpt: "..."
 date:   2022-01-07 11:10:00
 mathjax: true
