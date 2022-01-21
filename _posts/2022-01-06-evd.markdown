@@ -29,7 +29,7 @@ mathjax: true
 - $AA^T = A^TA = I$
 - A的n个列向量都是单位向量且彼此正交
 - A的n个行向量都是单位向量且彼此正交
-- det(A) = 1（当然也就表示rank(A)为n）
+- $|det(A)| = 1$（当然也就表示rank(A)为n）
 
 这些都很好理解，而且证明过程很简单，这里就不写出来了。
 
@@ -48,7 +48,8 @@ mathjax: true
 > + **得到结论**：存在正交矩阵 $A$和对角矩阵 $diag(\lambda)$，使得 $M=Adiag_{n}(\lambda)A^{-1}$
 > + **证明过程**：
 >> + 如果满秩矩阵M是一个对称矩阵，那就是说$M=M^{T}$。
->> + 那么就有 $A^{T}M = A^{T}M^{T} = (MA)^{T} = (Adiag(\lambda))^{T} = diag(\lambda)A^{T}$，
+>> + 已知M可以分解为$M=A_{nn}diag_{n}(\lambda)A_{nn}^{T}$，那么$MA_{nn}^{T}=A_{nn}diag_{n}(\lambda)$
+>> + 进而有 $A^{T}M = A^{T}M^{T} = (MA)^{T} = (Adiag(\lambda))^{T} = diag(\lambda)A^{T}$，
 >> + 进而有 $M = (A^{T})^{-1}diag(\lambda)A^{T}$
 >> + 结合 $M=A_{nn}diag_{n}(\lambda)A_{nn}^{-1}$，即有$A^{T} = A^{-1}$。
 >> + 故A为正交矩阵，故 $M=A_{nn}diag_{n}(\lambda)A_{nn}^{T}$
@@ -113,7 +114,7 @@ Ok，相信你已经能接受认可以上所述。
 
 利用 $M_{mn} = \sigma_{1} u_{1}^{T}v_{1} + \sigma_{2} u_{2}^{T}v_{2} + ... + \sigma_{n} u_{n}^{T}v_{n}$，就可以将 $M_{mn}$视为多项之和。因为 $u$和 $v$都是单位向量，那么 $\sigma$大小就代表了这个项的权重占比。
 
-r(M)近似： $argmin_{r(X) = r(M)}|M-X| = U^{-}_{nn}\Sigma_{nn}V_{nn}^{T}$，其中$U^{-}_{nn}$是$U_{mn}$在长边m上的n截断。
+r(M)近似公式， $Argmin_{r(X) = r(M)}|M-X| = U^{-}_{nn}\Sigma_{nn}V_{nn}^{T}$，其中$U^{-}_{nn}$是$U_{mn}$在长边m上的n截断。
 
 我们从线性代数的角度找到了这个规律，那就可以在任何满足充要条件的场景下使用这个规律了。
 
