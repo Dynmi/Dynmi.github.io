@@ -1,7 +1,7 @@
 ---
 layout: post
 comments: true
-title:  "the Architecture of MultiTask in Operating System"
+title:  "the Architecture of MultiTasking in Operating System"
 excerpt: "..."
 date:   2022-01-07 11:10:00
 mathjax: true
@@ -98,23 +98,29 @@ struct task_struct {
 
 #### task_struct::policy
 task_struct::policy决定了task的调度优先级策略。
-- SCHED_OTHER 分时任务；基于红黑树的完全公平调度算法；每次重新获取时间片只得到少量，自己阻塞或者现有时间片耗尽时，主动放弃CPU；周期检查时若等待队列存在更高优先级的task，则被抢占CPU。
-- SCHED_RR 实时任务；每次重新获取时间片只得到少量，自己阻塞或者现有时间片耗尽时，主动放弃CPU；周期检查时若等待队列存在更高优先级的task，则被抢占CPU。
-- SCHED_FIFO 实时任务；自己阻塞时，主动放弃CPU；周期检查时若等待队列存在更高优先级的task，则被抢占CPU。
+- SCHED_OTHER 分时任务；基于红黑树的完全公平调度算法；每次重新获取时间片只得到少量，自己阻塞或者现有时间片耗尽时，主动放弃CPU；时钟中断时若等待队列存在更高优先级的task，则被抢占CPU。
+- SCHED_RR 实时任务；每次重新获取时间片只得到少量，自己阻塞或者现有时间片耗尽时，主动放弃CPU；时钟中断时若等待队列存在更高优先级的task，则被抢占CPU。
+- SCHED_FIFO 实时任务；自己阻塞时，主动放弃CPU；时钟中断时若等待队列存在更高优先级的task，则被抢占CPU。
 
 task创建时policy默认继承父进程的policy，顺便提一句，init和kthreadd的policy都是SCHED_OTHER。task可以调用sched_setscheduler()来修改其调度优先级策略。后面也可以用`chrt`命令修改task的调度优先级策略。
 
-#### task_struct::static_prio 和 task_struct::rt_priority
-...
-#### task_struct::prio
-...
+#### 时间片的获得与消耗
+时间片（task_struct::time_slice）的获取发生在两个场景：
+- task刚被fork创建：时间片是其父进程的一半。
+- task主动或被动地放弃CPU，移入就绪队列的expired队列中：普通task根据它的task_struct::static_prio，实时task根据它的task_struct::rt_priority来重置时间片。优先级越高，分配的时间片越多。我们知道可以通过修改nice来修改普通进程的优先级，注意nice只对应static_prio。
+ 
+```
+#define NICE_TO_PRIO(nice)  (MAX_RT_PRIO + (nice) + 20)  
+```
+
+
 #### schedule()
 
 schedule()函数完成任务CPU调度的工作。
 schedule()流程:
 - 关闭当前 CPU 的抢占功能；
 - 如果当前 CPU 的运行队列中不存在任务，调用 idle_balance 从其他 CPU 的运行队列中取一部分执行；
-- 调用 pick_next_task 从当前READY任务列表里选择优先级最高的任务；
+- 调用 pick_next_task 依次访问四个优先级的active队列，找到优先级最高的任务；
 - 调用 context_switch 切换运行的上下文，包括寄存器的状态和堆栈；
 - 重新开启当前 CPU 的抢占功能；
 
