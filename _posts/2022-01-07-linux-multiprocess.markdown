@@ -94,13 +94,20 @@ struct task_struct {
 
 因为CPU核心数<<待执行任务数，因此需要优越的CPU分配调度算法，以平衡多个task的CPU占用。
 
-每个CPU都配有4*2=8个任务运行队列。分别是stop_sched_class>rt_sched_class>fair_sched_class>idle_sched_class这四种优先级的任务active队列和exipred队列。每当一个task的现有时间片全部用完，即将它加入相应优先级的expired队列并重新分配时间片。直到所有task都被移动到expired队列，便将active队列和expired队列指针交换。
+每个CPU的就绪队列细分为5个优先级队列，从高到底依次是
+- deadline_sched_class
+- stop_sched_class
+- rt_sched_class
+- fair_sched_class
+- idle_sched_class
+
+每当一个task的现有时间片全部用完，即将它从active队列移动到相应优先级的expired队列并重新分配时间片。直到所有task都被移动到expired队列，便将active队列和expired队列指针交换。
 
 #### task_struct::policy
 task_struct::policy决定了task的调度优先级策略。
-- SCHED_OTHER 分时任务；基于红黑树的完全公平调度算法；每次重新获取时间片只得到少量，自己阻塞或者现有时间片耗尽时，主动放弃CPU；时钟中断时若等待队列存在更高优先级的task，则被抢占CPU。
-- SCHED_RR 实时任务；每次重新获取时间片只得到少量，自己阻塞或者现有时间片耗尽时，主动放弃CPU；时钟中断时若等待队列存在更高优先级的task，则被抢占CPU。
-- SCHED_FIFO 实时任务；自己阻塞时，主动放弃CPU；时钟中断时若等待队列存在更高优先级的task，则被抢占CPU。
+- SCHED_NORMAL 分时任务；基于红黑树的完全公平调度算法；每次重新获取时间片只得到少量，自己阻塞或者现有时间片耗尽时，主动放弃CPU；
+- SCHED_RR 实时任务；每次重新获取时间片只得到少量，自己阻塞或者现有时间片耗尽时，主动放弃CPU；
+- SCHED_FIFO 实时任务；自己阻塞时，主动放弃CPU；
 
 task创建时policy默认继承父进程的policy，顺便提一句，init和kthreadd的policy都是SCHED_OTHER。task可以调用sched_setscheduler()来修改其调度优先级策略。后面也可以用`chrt`命令修改task的调度优先级策略。
 
@@ -113,6 +120,7 @@ task创建时policy默认继承父进程的policy，顺便提一句，init和kth
 #define NICE_TO_PRIO(nice)  (MAX_RT_PRIO + (nice) + 20)  
 ```
 
+每次时钟中断，都会将当前进程的剩余时间片减一。
 
 #### schedule()
 
@@ -120,12 +128,15 @@ schedule()函数完成任务CPU调度的工作。
 schedule()流程:
 - 关闭当前 CPU 的抢占功能；
 - 如果当前 CPU 的运行队列中不存在任务，调用 idle_balance 从其他 CPU 的运行队列中取一部分执行；
-- 调用 pick_next_task 依次访问四个优先级的active队列，找到优先级最高的任务；
+- 调用 pick_next_task 依次访问五个优先级的active队列，找到优先级最高的任务；
 - 调用 context_switch 切换运行的上下文，包括寄存器的状态和堆栈；
 - 重新开启当前 CPU 的抢占功能；
 
 schedule()是如何被执行的？ 
 
-- （抢占调度）当没有屏蔽中断的RUNNING中的task收到时钟中断，timer_interrupt()会被执行。timer_interrupt()中先调用schedule_tick()判断是否应该抢占，进而调用schedule()。
-请注意，一个task在进行系统调用（内部触发）和中断（外设触发）时都只是调用内核API而已，此时还是该task在CPU上运行着，只是从“用户态”转到了“内核态”。
-- （非抢占调度）当RUNNING的task主动放弃CPU切换到其他状态时，schedule()也会被调用。
+- 抢占调度。请注意，一个task在进行系统调用（内部触发）和中断（外设触发）时都只是调用内核API而已，此时还是该task在CPU上运行着，只是从“用户态”转到了“内核态”。
+  - 时钟中断固定调用schedule_tick()来检查是否需要抢占，需要则将TIF_NEED_RESCHED置真，中断处理结束返回时若TIF_NEED_RESCHED为真则调用schedule()。
+  - RUNING中的task通过wake_up()系统调用去唤醒其他阻塞态task将其加入就绪队列时，调用schedule_tick()来检查是否需要抢占，需要则将TIF_NEED_RESCHED置真，系统调用结束返回时若TIF_NEED_RESCHED为真则调用schedule()。
+- 非抢占调度
+  - RUNNING中的task主动放弃CPU（如自己阻塞、时钟中断递减时间片发现耗尽、收到SIGSTOP信号、进程销毁）切换到其他状态时，schedule()会被调用。
+  - 用户态自行调用schedule()
