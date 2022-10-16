@@ -6,9 +6,8 @@ includelink: true
 ---
 
 ## Brief Introduction
-- 王涵 is a final year student of computer science in Sichuan University. 
-- Work at ByteDance AdsInfra, 2021.6 ~ 2021.11
-- Feel free to contact [dynmi@foxmail.com](dynmi@foxmail.com)
+- 王涵 is a system architect in Bytedance Inc, focusing on recommendation system and feature engineering.
+- Feel free to contact [wanghan.ad@bytedance.com](wanghan.ad@bytedance.com)
 
 
 Updated in Nov 2021
