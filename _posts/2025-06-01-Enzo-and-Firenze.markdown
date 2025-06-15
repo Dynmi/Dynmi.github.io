@@ -10,10 +10,10 @@ mathjax: false
 1543年，在托斯卡纳草原上有一座皮恩扎小镇，医生伽利莱和妻子朱莉亚育有三个孩子。长女弗吉尼亚，自幼被送到阿切特里的圣·马泰奥门下修道。次女利维亚，继承了母亲的音乐天赋，是个鲁特琴手。小儿子Enzo，活泼爱玩，经常和镇上小伙伴到处玩耍。Enzo在托斯卡纳起伏跳越的草原和葡萄园间度过了自由自在的童年时光。直到14岁时，父亲送他去了佛罗伦萨美术学院学习绘画。
 
 <div class="imgcap">
-<img src="/assets/enzo/pienza.jpg">
+<img src="/assets/enzo/pienza.jpeg">
 </div>
 <div class="imgcap">
-<img src="/assets/enzo/tuscany_village.jpg">
+<img src="/assets/enzo/tuscany_village.jpeg">
 </div>
 
 在佛罗伦萨，Enzo借住在叔叔Mario家里，放学后经常在叔叔的酒吧里帮忙。这里每天下午的摇骰子游戏深深激发了Enzo的兴趣并使他每夜深度思考。
