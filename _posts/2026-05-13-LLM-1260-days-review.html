@@ -1,0 +1,1879 @@
+---
+layout: null
+title: "寒武纪 1260 天 · 大模型应用领域回顾"
+date: 2026-05-13 12:00:00
+excerpt: "2022.11 – 2026.05，大模型应用领域 1260 天的五次范式跃迁与前沿模型时间轴。"
+---
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>寒武纪 1260 天 · 大模型应用领域回顾 (2022.11 – 2026.05)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,800;9..144,900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1612;
+    --ink-soft: #3d342c;
+    --ink-faint: #6b5d52;
+    --paper: #f4ede2;
+    --paper-soft: #ede4d4;
+    --paper-deep: #e3d7c0;
+    --rule: #d9c8a8;
+    --seal: #a8311e;        /* 朱印红 */
+    --seal-deep: #7c1f0f;
+    --gold: #b88840;
+    --slate: #2f3a3f;
+    --teal: #285059;
+    --serif: "Fraunces", "Noto Serif SC", "Songti SC", serif;
+    --serif-cn: "Noto Serif SC", "Songti SC", serif;
+    --sans: "Inter", -apple-system, "PingFang SC", "Hiragino Sans GB", sans-serif;
+    --mono: "JetBrains Mono", "SF Mono", monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif-cn);
+    font-weight: 400;
+    line-height: 1.75;
+    font-size: 17px;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(at 12% 8%, rgba(168, 49, 30, 0.04) 0%, transparent 40%),
+      radial-gradient(at 88% 92%, rgba(40, 80, 89, 0.04) 0%, transparent 50%);
+    background-attachment: fixed;
+  }
+
+  /* —— 噪点叠加 —— */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0 0.06 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.5;
+    z-index: 1000;
+    mix-blend-mode: multiply;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+  .narrow    { max-width: 760px;  margin: 0 auto; padding: 0 32px; }
+
+  /* ─────────────── HERO ─────────────── */
+  .hero {
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+  }
+  .hero-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 50px;
+    font-family: var(--sans);
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .hero-meta .vol { font-weight: 600; color: var(--seal); }
+  .hero-meta .seal {
+    display: inline-block;
+    background: var(--seal);
+    color: var(--paper);
+    padding: 4px 10px;
+    letter-spacing: 0.3em;
+    font-weight: 700;
+    font-family: var(--serif-cn);
+    transform: rotate(-2deg);
+  }
+  .kicker {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--seal);
+    margin-bottom: 24px;
+  }
+  h1.title {
+    font-family: var(--serif-cn);
+    font-weight: 900;
+    font-size: clamp(48px, 7vw, 92px);
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 32px;
+  }
+  h1.title em {
+    font-style: normal;
+    color: var(--seal);
+    font-feature-settings: "ss01" on;
+  }
+  .deck {
+    font-family: var(--serif-cn);
+    font-weight: 300;
+    font-size: clamp(20px, 2.2vw, 27px);
+    line-height: 1.5;
+    color: var(--ink-soft);
+    max-width: 780px;
+    margin-bottom: 40px;
+    border-left: 3px solid var(--seal);
+    padding-left: 24px;
+  }
+  .byline {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--ink-faint);
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+  }
+  .byline span strong { color: var(--ink); display: block; font-weight: 600; }
+
+  /* ─────────────── SECTION HEADERS ─────────────── */
+  section { padding: 80px 0; }
+  section + section { border-top: 1px solid var(--rule); }
+
+  .section-num {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--seal);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .section-num::before {
+    content: "";
+    display: block;
+    width: 32px;
+    height: 1px;
+    background: var(--seal);
+  }
+  h2.section-title {
+    font-family: var(--serif-cn);
+    font-weight: 800;
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin-bottom: 24px;
+  }
+  h2.section-title .sub {
+    display: block;
+    font-family: var(--serif);
+    font-weight: 300;
+    font-style: italic;
+    font-size: 0.5em;
+    color: var(--ink-faint);
+    margin-top: 12px;
+    letter-spacing: 0;
+  }
+  .section-intro {
+    font-size: 19px;
+    line-height: 1.7;
+    color: var(--ink-soft);
+    max-width: 760px;
+    margin-bottom: 48px;
+  }
+
+  /* ─────────────── BODY PROSE ─────────────── */
+  .prose { max-width: 720px; margin: 0 auto; }
+  .prose p {
+    margin-bottom: 1.5em;
+    text-align: justify;
+    text-justify: inter-ideograph;
+    hyphens: auto;
+  }
+  .prose p.lead::first-letter {
+    font-family: var(--serif-cn);
+    font-weight: 900;
+    font-size: 4.5em;
+    line-height: 0.85;
+    float: left;
+    margin: 8px 14px 0 0;
+    color: var(--seal);
+  }
+  h3 {
+    font-family: var(--serif-cn);
+    font-weight: 700;
+    font-size: 28px;
+    line-height: 1.25;
+    color: var(--ink);
+    margin: 56px 0 20px;
+    letter-spacing: -0.005em;
+  }
+  h3::before {
+    content: "§ ";
+    color: var(--seal);
+    font-weight: 400;
+  }
+  h4 {
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 32px 0 12px;
+  }
+
+  strong, b { font-weight: 700; color: var(--ink); }
+  em { font-style: italic; color: var(--ink-soft); }
+
+  code, .mono {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: var(--paper-deep);
+    padding: 1px 6px;
+    border-radius: 2px;
+    color: var(--seal-deep);
+  }
+
+  a { color: var(--seal); text-decoration: none; border-bottom: 1px solid var(--rule); }
+
+  /* ─────────────── PULL QUOTE ─────────────── */
+  .pullquote {
+    margin: 60px 0;
+    padding: 40px 0;
+    border-top: 2px solid var(--ink);
+    border-bottom: 2px solid var(--ink);
+    text-align: center;
+  }
+  .pullquote q {
+    display: block;
+    font-family: var(--serif-cn);
+    font-weight: 300;
+    font-size: clamp(24px, 3vw, 36px);
+    line-height: 1.35;
+    color: var(--ink);
+    quotes: none;
+  }
+  .pullquote q::before, .pullquote q::after { content: none; }
+  .pullquote-attr {
+    font-family: var(--sans);
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-top: 20px;
+  }
+
+  /* ─────────────── DATA / FIGURES ─────────────── */
+  figure {
+    margin: 56px 0;
+  }
+  figure.full {
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+    max-width: 100vw;
+    padding: 0 32px;
+  }
+  figure.wide {
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  figcaption {
+    font-family: var(--sans);
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--ink-faint);
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule);
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  figcaption strong { color: var(--ink); font-weight: 700; }
+  .fig-label {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--seal);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  /* ─────────────── STATS BLOCKS ─────────────── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0;
+    margin: 48px 0;
+    border-top: 2px solid var(--ink);
+    border-bottom: 2px solid var(--ink);
+  }
+  .stat {
+    padding: 28px 24px;
+    border-right: 1px solid var(--rule);
+  }
+  .stat:last-child { border-right: none; }
+  .stat-num {
+    font-family: var(--serif-cn);
+    font-weight: 800;
+    font-size: 48px;
+    line-height: 1;
+    color: var(--seal);
+    letter-spacing: -0.02em;
+    display: block;
+  }
+  .stat-num small { font-size: 0.4em; vertical-align: super; font-weight: 400; color: var(--ink-faint); }
+  .stat-label {
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    margin-top: 12px;
+    line-height: 1.4;
+  }
+  .stat-source {
+    font-family: var(--sans);
+    font-size: 10px;
+    color: var(--ink-faint);
+    margin-top: 8px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ─────────────── TABLES ─────────────── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 32px 0;
+    font-family: var(--sans);
+    font-size: 13.5px;
+  }
+  thead tr { border-bottom: 2px solid var(--ink); }
+  tbody tr { border-bottom: 1px solid var(--rule); }
+  tbody tr:hover { background: var(--paper-soft); }
+  th {
+    text-align: left;
+    padding: 12px 10px;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  td {
+    padding: 14px 10px;
+    vertical-align: top;
+    color: var(--ink-soft);
+  }
+  td.model { font-family: var(--serif-cn); font-weight: 700; color: var(--ink); font-size: 14.5px; }
+  td.date { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); white-space: nowrap; }
+  td .tag {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    margin-right: 4px;
+    background: var(--paper-deep);
+    color: var(--ink-soft);
+    border-radius: 2px;
+  }
+  td .tag.s { background: var(--seal); color: var(--paper); }
+  td .tag.t { background: var(--teal); color: var(--paper); }
+  td .tag.g { background: var(--gold); color: var(--paper); }
+
+  /* ─────────────── ASIDE / SIDEBAR ─────────────── */
+  aside.callout {
+    background: var(--paper-deep);
+    border-left: 4px solid var(--seal);
+    padding: 28px 32px;
+    margin: 48px 0;
+    font-size: 15px;
+  }
+  aside.callout h5 {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--seal);
+    margin-bottom: 12px;
+  }
+  aside.callout p { margin-bottom: 1em; line-height: 1.65; }
+  aside.callout p:last-child { margin-bottom: 0; }
+
+  /* ─────────────── PHASE CARDS ─────────────── */
+  .phase {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 40px;
+    margin-bottom: 64px;
+    padding-top: 32px;
+    border-top: 1px solid var(--rule);
+  }
+  .phase:first-of-type { border-top: 2px solid var(--ink); }
+  .phase-meta {
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+  .phase-meta .roman {
+    font-family: var(--serif-cn);
+    font-weight: 900;
+    font-size: 56px;
+    color: var(--seal);
+    line-height: 0.9;
+    display: block;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+  .phase-meta .when {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+    display: block;
+  }
+  .phase-meta .tagline {
+    font-family: var(--serif-cn);
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .phase-body h3 { margin-top: 0; }
+
+  /* ─────────────── COMPARISON COLUMNS ─────────────── */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    margin: 48px 0;
+    border: 1px solid var(--ink);
+  }
+  .compare > div {
+    padding: 32px;
+  }
+  .compare > div:first-child {
+    border-right: 1px solid var(--ink);
+    background: var(--paper-soft);
+  }
+  .compare h6 {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--seal);
+    margin-bottom: 16px;
+  }
+  .compare h6 .yr { color: var(--ink-faint); margin-left: 8px; }
+  .compare ul { list-style: none; padding: 0; }
+  .compare li {
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--rule);
+    font-size: 14.5px;
+    line-height: 1.55;
+  }
+  .compare li:last-child { border-bottom: none; }
+  .compare li strong { color: var(--ink); }
+
+  /* ─────────────── FOOTER ─────────────── */
+  footer {
+    padding: 80px 0 60px;
+    border-top: 2px solid var(--ink);
+    background: var(--paper-soft);
+  }
+  .colophon {
+    font-family: var(--sans);
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--ink-faint);
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .colophon strong { color: var(--ink); }
+  .endmark {
+    text-align: center;
+    margin: 60px 0 40px;
+    font-family: var(--serif-cn);
+    font-size: 20px;
+    color: var(--seal);
+    letter-spacing: 1em;
+  }
+
+  /* ─────────────── INLINE LIST STYLES ─────────────── */
+  ol.refs {
+    margin: 24px 0;
+    padding-left: 0;
+    list-style: none;
+    counter-reset: ref;
+  }
+  ol.refs li {
+    counter-increment: ref;
+    font-family: var(--sans);
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 8px 0 8px 36px;
+    position: relative;
+    color: var(--ink-soft);
+    border-bottom: 1px dotted var(--rule);
+  }
+  ol.refs li::before {
+    content: counter(ref, decimal-leading-zero);
+    position: absolute;
+    left: 0;
+    top: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--seal);
+    font-weight: 600;
+  }
+
+  @media (max-width: 768px) {
+    .phase { grid-template-columns: 1fr; gap: 16px; }
+    .phase-meta .roman { font-size: 40px; }
+    .compare { grid-template-columns: 1fr; }
+    .compare > div:first-child { border-right: none; border-bottom: 1px solid var(--ink); }
+    h1.title { font-size: 44px; }
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .stat:nth-child(2n) { border-right: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ HERO ═══════════════════════════ -->
+<header class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="vol">VOL. 01 · 行业回顾</span>
+      <span class="seal">深度</span>
+      <span>2026 年 5 月 13 日</span>
+    </div>
+    <div class="kicker">A retrospective for senior practitioners</div>
+    <h1 class="title">寒武纪<br><em>1260 天</em></h1>
+    <p class="deck">
+      自 ChatGPT 于 2022 年 11 月 30 日发布起算，大模型应用领域已经历约 1260 天。
+      这是一段被严重低估了"密度"的时期 —— 算力曲线、推理范式、产品形态、
+      工程栈、商业格局乃至开发者职业本身，都至少经历了三轮范式跃迁。
+      本文为资深从业者准备一份高密度的"地形测绘"。
+    </p>
+    <div class="byline">
+      <span><strong>目标读者</strong>资深行业调研专家 · 资深应用科学家</span>
+      <span><strong>覆盖周期</strong>2022.11 – 2026.05</span>
+      <span><strong>阅读时长</strong>约 35–45 分钟</span>
+      <span><strong>编辑标尺</strong>事实密度 &gt; 文采</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════ 引言 ═══════════════════════════ -->
+<section>
+  <div class="container">
+    <div class="prose">
+      <div class="section-num">引子 · Prelude</div>
+      <h2 class="section-title">三年半，五次范式跃迁<span class="sub">five paradigm shifts in three and a half years</span></h2>
+      <p class="section-intro">
+        把这三年半压缩到一张图上，会发现：每一轮"看起来站稳了"的产品形态，往往在 9–14 个月内
+        就被下一轮范式吞并。RAG 吞并 fine-tuning，多模态吞并纯文本，推理模型吞并 RAG-only 工作流，
+        智能体吞并对话框 —— 速度与方向都不是 2023 年初任何人能完整预测的。
+      </p>
+
+      <p class="lead">
+        我们正处在一个不寻常的状态：技术尚未达到稳态，但商业部署已成既成事实。截至 2025 年底，
+        企业级生成式 AI 支出从 2023 年的 <strong>17 亿美元</strong> 跃升至 <strong>370 亿美元</strong>，
+        三年内增长 21.7 倍 ——
+        这是软件行业历史上最快的品类扩张。但同期，70–85% 的企业 AI 项目未达预期，42% 的公司
+        在 2025 年放弃了大部分 AI 项目（2024 年该数字为 17%）。这种"宏观繁荣、微观失败率高"的
+        组合，是技术成熟度曲线上一个典型却被低估的特征。
+      </p>
+
+      <p>
+        作为面向资深读者的回顾，本文跳过"什么是 Transformer"、"什么是 RAG"这类入门内容，
+        直接对五个阶段做结构性总结：每一阶段的<em>触发事件</em>、<em>技术拐点</em>、
+        <em>主导工程范式</em>、<em>商业形态</em>，以及<em>这一阶段为何会终结</em>。
+        每阶段附数据、图表、关键模型清单与未解问题。
+      </p>
+
+      <p>
+        贯穿全文的一个论点：大模型应用领域的真正瓶颈，从未是模型本身的能力上限，
+        而是<strong>把能力转换为可靠工作流的工程范式</strong>。每次范式跃迁，本质上都是
+        某种工程瓶颈被新模型能力压平，从而让先前"必须人工拼接"的部分变得自动化。
+        这条主线，比任何一份模型排行榜都更能解释行业的真实演变。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ 关键指标 ═══════════════════════════ -->
+<section style="padding: 40px 0;">
+  <div class="container">
+    <div class="stat-grid">
+      <div class="stat">
+        <span class="stat-num">21.7×</span>
+        <div class="stat-label">企业 GenAI 年支出增长<br>2023 → 2025</div>
+        <div class="stat-source">Menlo Ventures, 2025</div>
+      </div>
+      <div class="stat">
+        <span class="stat-num">10,000<small>+</small></span>
+        <div class="stat-label">活跃 MCP 服务器数<br>2026 年初</div>
+        <div class="stat-source">AAIF / Anthropic</div>
+      </div>
+      <div class="stat">
+        <span class="stat-num">80.9<small>%</small></span>
+        <div class="stat-label">SWE-bench Verified 当前 SOTA<br>(Claude Opus 4.6)</div>
+        <div class="stat-source">2026 Q1 公开榜</div>
+      </div>
+      <div class="stat">
+        <span class="stat-num">5 <small>hr</small></span>
+        <div class="stat-label">前沿模型可独立完成<br>软件任务时长（50% 成功率）</div>
+        <div class="stat-source">METR, 2025.11</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ 时间线 ═══════════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-num">图 一 · Figure 1</div>
+    <h2 class="section-title">前沿模型时间轴<span class="sub">a compressed timeline of frontier model releases</span></h2>
+    <p class="section-intro">
+      下图以横向时间轴展示主要前沿模型的发布节奏。色块代表能力代际：纯文本（黑）→
+      多模态（青）→ 推理模型（朱）→ 智能体原生（金）。模型族沿纵轴分组，便于观察各家
+      迭代周期的对称性与节奏差异。
+    </p>
+
+    <figure class="full">
+      <svg viewBox="0 0 1400 620" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto; background: var(--paper-soft); border: 1px solid var(--rule);">
+        <!-- 背景网格 -->
+        <defs>
+          <pattern id="grid" width="100" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 100 0 L 0 0 0 20" fill="none" stroke="#d9c8a8" stroke-width="0.3"/>
+          </pattern>
+          <linearGradient id="seal-grad" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stop-color="#a8311e"/>
+            <stop offset="100%" stop-color="#c84b31"/>
+          </linearGradient>
+        </defs>
+        <rect width="1400" height="620" fill="url(#grid)" opacity="0.4"/>
+
+        <!-- 时间轴主线 -->
+        <line x1="80" y1="560" x2="1340" y2="560" stroke="#1a1612" stroke-width="2"/>
+
+        <!-- 时间刻度（2022Q4 - 2026Q2） -->
+        <!-- 14 个季度，间距约 (1340-80)/14 = 90 -->
+        <g font-family="JetBrains Mono, monospace" font-size="11" fill="#6b5d52">
+          <g><line x1="80" y1="558" x2="80" y2="566" stroke="#1a1612"/><text x="80" y="585" text-anchor="middle">2022.Q4</text></g>
+          <g><line x1="170" y1="558" x2="170" y2="566" stroke="#1a1612"/><text x="170" y="585" text-anchor="middle">23.Q1</text></g>
+          <g><line x1="260" y1="558" x2="260" y2="566" stroke="#1a1612"/><text x="260" y="585" text-anchor="middle">23.Q2</text></g>
+          <g><line x1="350" y1="558" x2="350" y2="566" stroke="#1a1612"/><text x="350" y="585" text-anchor="middle">23.Q3</text></g>
+          <g><line x1="440" y1="558" x2="440" y2="566" stroke="#1a1612"/><text x="440" y="585" text-anchor="middle">23.Q4</text></g>
+          <g><line x1="530" y1="558" x2="530" y2="566" stroke="#1a1612"/><text x="530" y="585" text-anchor="middle">24.Q1</text></g>
+          <g><line x1="620" y1="558" x2="620" y2="566" stroke="#1a1612"/><text x="620" y="585" text-anchor="middle">24.Q2</text></g>
+          <g><line x1="710" y1="558" x2="710" y2="566" stroke="#1a1612"/><text x="710" y="585" text-anchor="middle">24.Q3</text></g>
+          <g><line x1="800" y1="558" x2="800" y2="566" stroke="#1a1612"/><text x="800" y="585" text-anchor="middle">24.Q4</text></g>
+          <g><line x1="890" y1="558" x2="890" y2="566" stroke="#1a1612"/><text x="890" y="585" text-anchor="middle">25.Q1</text></g>
+          <g><line x1="980" y1="558" x2="980" y2="566" stroke="#1a1612"/><text x="980" y="585" text-anchor="middle">25.Q2</text></g>
+          <g><line x1="1070" y1="558" x2="1070" y2="566" stroke="#1a1612"/><text x="1070" y="585" text-anchor="middle">25.Q3</text></g>
+          <g><line x1="1160" y1="558" x2="1160" y2="566" stroke="#1a1612"/><text x="1160" y="585" text-anchor="middle">25.Q4</text></g>
+          <g><line x1="1250" y1="558" x2="1250" y2="566" stroke="#1a1612"/><text x="1250" y="585" text-anchor="middle">26.Q1</text></g>
+          <g><line x1="1340" y1="558" x2="1340" y2="566" stroke="#1a1612"/><text x="1340" y="585" text-anchor="middle">26.Q2</text></g>
+        </g>
+
+        <!-- 阶段背景色带 -->
+        <g opacity="0.08">
+          <rect x="80" y="40" width="270" height="510" fill="#3d342c"/>
+          <rect x="350" y="40" width="270" height="510" fill="#285059"/>
+          <rect x="620" y="40" width="180" height="510" fill="#b88840"/>
+          <rect x="800" y="40" width="270" height="510" fill="#a8311e"/>
+          <rect x="1070" y="40" width="270" height="510" fill="#1a1612"/>
+        </g>
+
+        <!-- 阶段标签 -->
+        <g font-family="Noto Serif SC, serif" font-size="13" font-weight="700" fill="#1a1612">
+          <text x="215" y="30" text-anchor="middle">I 奇点时刻</text>
+          <text x="485" y="30" text-anchor="middle">II 基础设施</text>
+          <text x="710" y="30" text-anchor="middle">III 多模态</text>
+          <text x="935" y="30" text-anchor="middle">IV 推理革命</text>
+          <text x="1205" y="30" text-anchor="middle">V 智能体</text>
+        </g>
+
+        <!-- 模型族行 -->
+        <g font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="#3d342c">
+          <text x="70" y="90" text-anchor="end">OpenAI</text>
+          <text x="70" y="170" text-anchor="end">Anthropic</text>
+          <text x="70" y="250" text-anchor="end">Google</text>
+          <text x="70" y="330" text-anchor="end">Meta · 开源</text>
+          <text x="70" y="410" text-anchor="end">中国实验室</text>
+          <text x="70" y="490" text-anchor="end">视频 / 多模</text>
+        </g>
+
+        <!-- 行分隔线 -->
+        <g stroke="#d9c8a8" stroke-width="0.5" stroke-dasharray="2,3">
+          <line x1="80" y1="120" x2="1340" y2="120"/>
+          <line x1="80" y1="200" x2="1340" y2="200"/>
+          <line x1="80" y1="280" x2="1340" y2="280"/>
+          <line x1="80" y1="360" x2="1340" y2="360"/>
+          <line x1="80" y1="440" x2="1340" y2="440"/>
+          <line x1="80" y1="520" x2="1340" y2="520"/>
+        </g>
+
+        <!-- 模型节点：OpenAI 行 (y=90) -->
+        <g font-family="Inter" font-size="10" fill="#1a1612">
+          <circle cx="100" cy="90" r="6" fill="#1a1612"/><text x="100" y="78" text-anchor="middle">ChatGPT</text>
+          <circle cx="200" cy="90" r="7" fill="#1a1612"/><text x="200" y="78" text-anchor="middle">GPT-4</text>
+          <circle cx="430" cy="90" r="6" fill="#1a1612"/><text x="430" y="78" text-anchor="middle">GPT-4 Turbo</text>
+          <circle cx="600" cy="90" r="7" fill="#285059"/><text x="600" y="78" text-anchor="middle">GPT-4o</text>
+          <circle cx="730" cy="90" r="8" fill="#a8311e"/><text x="730" y="78" text-anchor="middle">o1</text>
+          <circle cx="870" cy="90" r="7" fill="#a8311e"/><text x="870" y="78" text-anchor="middle">o3-mini</text>
+          <circle cx="1060" cy="90" r="9" fill="#a8311e"/><text x="1060" y="78" text-anchor="middle">GPT-5</text>
+          <circle cx="1180" cy="90" r="7" fill="#a8311e"/><text x="1180" y="78" text-anchor="middle">GPT-5.2</text>
+        </g>
+
+        <!-- Anthropic 行 (y=170) -->
+        <g font-family="Inter" font-size="10" fill="#1a1612">
+          <circle cx="225" cy="170" r="6" fill="#1a1612"/><text x="225" y="158" text-anchor="middle">Claude 1</text>
+          <circle cx="270" cy="170" r="5" fill="#1a1612"/><text x="270" y="158" text-anchor="middle">100K</text>
+          <circle cx="430" cy="170" r="6" fill="#1a1612"/><text x="430" y="158" text-anchor="middle">Claude 2.1</text>
+          <circle cx="555" cy="170" r="7" fill="#285059"/><text x="555" y="158" text-anchor="middle">Claude 3</text>
+          <circle cx="640" cy="170" r="7" fill="#285059"/><text x="640" y="158" text-anchor="middle">3.5 Sonnet</text>
+          <circle cx="830" cy="170" r="8" fill="#b88840"/><text x="830" y="158" text-anchor="middle">Computer Use</text>
+          <circle cx="930" cy="170" r="7" fill="#a8311e"/><text x="930" y="158" text-anchor="middle">3.7</text>
+          <circle cx="1030" cy="170" r="8" fill="#a8311e"/><text x="1030" y="158" text-anchor="middle">Claude 4</text>
+          <circle cx="1190" cy="170" r="8" fill="#a8311e"/><text x="1190" y="158" text-anchor="middle">Opus 4.5</text>
+          <circle cx="1310" cy="170" r="9" fill="#a8311e"/><text x="1310" y="158" text-anchor="middle">Opus 4.7</text>
+        </g>
+
+        <!-- Google 行 (y=250) -->
+        <g font-family="Inter" font-size="10" fill="#1a1612">
+          <circle cx="230" cy="250" r="5" fill="#6b5d52"/><text x="230" y="238" text-anchor="middle">Bard</text>
+          <circle cx="430" cy="250" r="6" fill="#1a1612"/><text x="430" y="238" text-anchor="middle">Gemini 1</text>
+          <circle cx="540" cy="250" r="7" fill="#285059"/><text x="540" y="238" text-anchor="middle">1.5 Pro (1M)</text>
+          <circle cx="730" cy="250" r="7" fill="#285059"/><text x="730" y="238" text-anchor="middle">2.0 Flash</text>
+          <circle cx="900" cy="250" r="7" fill="#a8311e"/><text x="900" y="238" text-anchor="middle">2.5 Pro</text>
+          <circle cx="1010" cy="250" r="6" fill="#285059"/><text x="1010" y="238" text-anchor="middle">Veo 3</text>
+          <circle cx="1110" cy="250" r="6" fill="#285059"/><text x="1110" y="238" text-anchor="middle">Nano-Banana</text>
+          <circle cx="1230" cy="250" r="9" fill="#a8311e"/><text x="1230" y="238" text-anchor="middle">Gemini 3</text>
+        </g>
+
+        <!-- Meta/开源 行 (y=330) -->
+        <g font-family="Inter" font-size="10" fill="#1a1612">
+          <circle cx="195" cy="330" r="6" fill="#1a1612"/><text x="195" y="318" text-anchor="middle">LLaMA 1</text>
+          <circle cx="320" cy="330" r="6" fill="#1a1612"/><text x="320" y="318" text-anchor="middle">LLaMA 2</text>
+          <circle cx="350" cy="330" r="5" fill="#1a1612"/><text x="350" y="318" text-anchor="middle">Mistral 7B</text>
+          <circle cx="450" cy="330" r="5" fill="#1a1612"/><text x="450" y="318" text-anchor="middle">Mixtral</text>
+          <circle cx="600" cy="330" r="6" fill="#1a1612"/><text x="600" y="318" text-anchor="middle">LLaMA 3</text>
+          <circle cx="800" cy="330" r="6" fill="#1a1612"/><text x="800" y="318" text-anchor="middle">LLaMA 3.3</text>
+          <circle cx="990" cy="330" r="6" fill="#1a1612"/><text x="990" y="318" text-anchor="middle">LLaMA 4</text>
+          <circle cx="1080" cy="330" r="6" fill="#a8311e"/><text x="1080" y="318" text-anchor="middle">gpt-oss</text>
+        </g>
+
+        <!-- 中国实验室 行 (y=410) -->
+        <g font-family="Inter" font-size="10" fill="#1a1612">
+          <circle cx="320" cy="410" r="5" fill="#1a1612"/><text x="320" y="398" text-anchor="middle">Qwen 1</text>
+          <circle cx="510" cy="410" r="6" fill="#1a1612"/><text x="510" y="398" text-anchor="middle">DeepSeek V2</text>
+          <circle cx="700" cy="410" r="6" fill="#1a1612"/><text x="700" y="398" text-anchor="middle">Qwen 2.5</text>
+          <circle cx="820" cy="410" r="6" fill="#1a1612"/><text x="820" y="398" text-anchor="middle">DeepSeek V3</text>
+          <circle cx="860" cy="410" r="10" fill="#a8311e"/><text x="860" y="398" text-anchor="middle" font-weight="700">★ R1</text>
+          <circle cx="1050" cy="410" r="7" fill="#a8311e"/><text x="1050" y="398" text-anchor="middle">Qwen 3</text>
+          <circle cx="1160" cy="410" r="7" fill="#a8311e"/><text x="1160" y="398" text-anchor="middle">V3.2</text>
+          <circle cx="1270" cy="410" r="6" fill="#a8311e"/><text x="1270" y="398" text-anchor="middle">GLM-5</text>
+        </g>
+
+        <!-- 视频/多模 行 (y=490) -->
+        <g font-family="Inter" font-size="10" fill="#1a1612">
+          <circle cx="350" cy="490" r="5" fill="#285059"/><text x="350" y="478" text-anchor="middle">Midjourney v5</text>
+          <circle cx="530" cy="490" r="7" fill="#285059"/><text x="530" y="478" text-anchor="middle">Sora 预览</text>
+          <circle cx="650" cy="490" r="6" fill="#285059"/><text x="650" y="478" text-anchor="middle">Runway Gen-3</text>
+          <circle cx="800" cy="490" r="7" fill="#285059"/><text x="800" y="478" text-anchor="middle">Sora 公测</text>
+          <circle cx="1010" cy="490" r="7" fill="#285059"/><text x="1010" y="478" text-anchor="middle">Veo 3 (带音频)</text>
+          <circle cx="1080" cy="490" r="7" fill="#285059"/><text x="1080" y="478" text-anchor="middle">Sora 2</text>
+          <circle cx="1240" cy="490" r="6" fill="#6b5d52"/><text x="1240" y="478" text-anchor="middle">Kling O1</text>
+        </g>
+
+        <!-- 图例 -->
+        <g transform="translate(80, 605)" font-family="Inter, sans-serif" font-size="11" fill="#3d342c">
+          <circle cx="0" cy="0" r="5" fill="#1a1612"/><text x="10" y="4">纯文本 / 经典</text>
+          <circle cx="115" cy="0" r="5" fill="#285059"/><text x="125" y="4">多模态</text>
+          <circle cx="210" cy="0" r="5" fill="#b88840"/><text x="220" y="4">智能体原生</text>
+          <circle cx="320" cy="0" r="5" fill="#a8311e"/><text x="330" y="4">推理 / 思考链</text>
+        </g>
+      </svg>
+      <figcaption>
+        <span class="fig-label">图 1 · 模型发布与能力代际</span>
+        节点大小近似反映其市场影响力，颜色代表能力代际。注意 <strong>2025 Q1 的"DeepSeek 节点"</strong>
+        是少数尺寸超过同期 OpenAI 节点的开源模型 —— 它不仅推动了开源阵营的再次跃迁，
+        也直接触发了主要闭源厂商的成本结构重估。Sora 2 (2025.09)、Veo 3 (2025.05) 与
+        Nano-Banana (2025.08) 共同标志着原生多模态生成在 2025 年达到商用门槛。
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ 五个阶段 ═══════════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-num">主体 · The Five Phases</div>
+    <h2 class="section-title">五阶段细解<span class="sub">five phases, each with its trigger, peak, and termination</span></h2>
+    <p class="section-intro">
+      下文按时间顺序拆解五个阶段。每个阶段包含四个分析维度：<strong>触发事件</strong>、
+      <strong>主导工程范式</strong>、<strong>生态指标</strong>、<strong>为何被下一阶段吞并</strong>。
+    </p>
+
+    <!-- ─── PHASE I ─── -->
+    <div class="phase">
+      <div class="phase-meta">
+        <span class="roman">I</span>
+        <span class="when">2022.11 – 2023.中</span>
+        <span class="tagline">奇点时刻<br>The Singularity Moment</span>
+      </div>
+      <div class="phase-body">
+        <h3>触发：消费级 RLHF 的"意外"成功</h3>
+        <p>
+          2022 年 11 月 30 日，OpenAI 把 GPT-3.5 加上一个简单的对话 UI 公开 ——
+          ChatGPT 在 5 天内达到 100 万用户，2 个月内达到 1 亿月活，至今仍是消费类
+          软件历史上最快的用户曲线之一。重要的不是底层模型（InstructGPT 已存在近一年），
+          而是 <strong>RLHF + 对话 UI</strong> 的组合让普通用户第一次"感觉到"了大模型。
+          整个行业的预期在三个月内被重新校准。
+        </p>
+
+        <p>
+          紧随其后的事件密度令人窒息：2023 年 2 月 LLaMA 1 发布（次月权重泄漏，触发开源
+          Cambrian explosion，Alpaca / Vicuna / Koala 等迅速诞生）；3 月 GPT-4 发布 ——
+          多模态、显著更强的推理、当时令人震撼的 95 percentile 律考与 SAT 表现；
+          同月 Anthropic 推出 Claude 1，Google 仓促推出 Bard。下半年又见到 Claude 2 的
+          100K 上下文、Mistral 7B 等。
+        </p>
+
+        <h3>主导工程范式：Prompt-only 与单轮调用</h3>
+        <p>
+          这一阶段几乎所有应用都是"在 prompt 上做文章"。<code>system prompt + user prompt</code>
+          的两段式结构主宰一切，长上下文受限（GPT-4 初版 8K，扩展版 32K），
+          检索增强尚未标准化。早期产品形态出奇地一致：客服聊天机器人、文本摘要、邮件助手、
+          以 GitHub Copilot 为代表的代码补全。Notion AI（2023.02）、Jasper、Copy.ai 等
+          "在已有 SaaS 上贴一层 GPT"的产品形态短暂垄断了 ARR 增速榜。
+        </p>
+
+        <h3>这个阶段为什么会终结</h3>
+        <p>
+          两个原因：第一，<strong>幻觉问题在生产环境暴露</strong>。律师援引 ChatGPT 编造的
+          判例被 sanction（Mata v. Avianca，2023.06）成为标志性事件，强迫行业从"
+          能不能用模型"转向"<em>如何把模型钉在真实数据上</em>"。第二，
+          <strong>上下文窗口 8K 不够用</strong>。法律、医疗、金融等高价值场景的源文档单份就远超 8K，
+          逼出了对外部检索的工程刚需。这两个因素直接催生了阶段 II 的 RAG 范式。
+        </p>
+      </div>
+    </div>
+
+    <!-- ─── PHASE II ─── -->
+    <div class="phase">
+      <div class="phase-meta">
+        <span class="roman">II</span>
+        <span class="when">2023.中 – 2024.初</span>
+        <span class="tagline">基础设施成形<br>Infrastructure Crystallizes</span>
+      </div>
+      <div class="phase-body">
+        <h3>触发：检索的工程化与上下文窗口竞赛</h3>
+        <p>
+          2023 年 5 月 Anthropic 把 Claude 的上下文窗口扩到 100K（一次性吃下整本中等长度的书），
+          同时 OpenAI 在 6 月发布 <strong>Function Calling</strong> ——
+          这两件事被低估，但它们重塑了工程范式。Function Calling 把"让 LLM 输出 JSON"
+          这件不可靠的事情标准化为 API 一等公民；100K 窗口则让 RAG 从"必须"变成"可选"，
+          打开了"长上下文 vs. 检索"的工程争论。
+        </p>
+
+        <p>
+          2023 年 11 月 GPT-4 Turbo 把窗口推到 128K、价格降低 3x；同月 Claude 2.1 推出 200K；
+          2024 年 2 月 Gemini 1.5 Pro 推出 <strong>100 万 token</strong> 上下文（后扩到 200 万）。
+          上下文从 KB 级跃升到 MB 级，整本代码仓库、季度财报全集、整套法典都成为单次提示的合理输入。
+        </p>
+
+        <h3>主导工程范式：RAG + Function Calling + Agent 雏形</h3>
+
+        <div class="compare">
+          <div>
+            <h6>2023 上半年 · prompt-only 栈</h6>
+            <ul>
+              <li><strong>调用</strong>：单轮 chat completion</li>
+              <li><strong>上下文</strong>：8K–32K，整段塞入</li>
+              <li><strong>外部数据</strong>：手工 prompt 拼接</li>
+              <li><strong>输出格式</strong>：自然语言，正则提取</li>
+              <li><strong>错误处理</strong>：人工 retry</li>
+              <li><strong>主要瓶颈</strong>：幻觉、长度</li>
+            </ul>
+          </div>
+          <div>
+            <h6>2024 初 · RAG + tool 栈</h6>
+            <ul>
+              <li><strong>调用</strong>：多轮 + 工具调用循环</li>
+              <li><strong>上下文</strong>：128K–1M，分块检索</li>
+              <li><strong>外部数据</strong>：向量库 + 重排</li>
+              <li><strong>输出格式</strong>：JSON Schema 严格约束</li>
+              <li><strong>错误处理</strong>：自动重试 + 工具回退</li>
+              <li><strong>主要瓶颈</strong>：可靠性、延迟、成本</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>生态指标：向量库与编排框架的资本盛宴</h3>
+        <p>
+          向量数据库赛道在 2023 年至 2024 年初经历了几乎与 GPU 同步的资本流入。
+          Pinecone（B 轮 1 亿美元、估值 7.5 亿）、Weaviate、Qdrant、Chroma、Milvus、
+          以及 PostgreSQL 阵营的 pgvector，构成了从专用到通用的完整光谱。同期 LangChain
+          (2022.10 创立) 和 LlamaIndex 成为编排标准；Haystack、AutoGPT、BabyAGI
+          则代表了早期 agent 实验，虽然多数不能稳定工作，但它们建立了"循环式 LLM 调用"
+          的工程心智模型。
+        </p>
+
+        <h3>这个阶段为什么会终结</h3>
+        <p>
+          RAG 解决了"模型不知道你的数据"的问题，但它没有解决<strong>多模态输入</strong>
+          （PDF 里的图表、UI 截图、视频会议录像）、<strong>实时音视频交互</strong>，
+          以及 <strong>跨模态推理</strong>。同时，单纯的文本 RAG 在面对真正复杂的工作流
+          （比如读一份带表格和图片的研报，再生成投资建议）时显得笨拙。
+          多模态自此成为必选项，而非加分项。
+        </p>
+      </div>
+    </div>
+
+    <!-- ─── PHASE III ─── -->
+    <div class="phase">
+      <div class="phase-meta">
+        <span class="roman">III</span>
+        <span class="when">2024.全年</span>
+        <span class="tagline">多模态成为默认<br>Multimodal as Default</span>
+      </div>
+      <div class="phase-body">
+        <h3>触发：GPT-4o 与 Claude 3 同期到位</h3>
+        <p>
+          2024 年 3 月 Anthropic 一次发布 Claude 3 三件套（Haiku/Sonnet/Opus），首次把
+          原生视觉理解放进所有 SKU；2024 年 5 月 OpenAI 发布 GPT-4o ——
+          单一模型原生处理文本/图像/音频，<strong>320 毫秒</strong> 语音响应延迟接近人类对话节奏。
+          2024 年 2 月 Gemini 1.5 Pro 已经能在百万 token 上下文中找回视频中某一帧。
+          至 2024 年底，前沿厂商的"默认 SKU"都是多模态，单模态被边缘化。
+        </p>
+
+        <h3>视频生成的"GPT-1 时刻"</h3>
+        <p>
+          2024 年 2 月 OpenAI 预览 Sora —— 1 分钟、1080p、强物理一致性的视频生成，
+          视觉效果震撼，但当时无法发布给公众。同年内 Runway Gen-3、Luma Dream Machine、
+          快手 Kling、字节即梦、Pika 1.5 等先后追上甚至在某些维度超越；Google 推出 Veo 2。
+          Sora 在 2024 年 12 月才公开放出（被称为 Sora "Turbo"），但市场已经移动 ——
+          这是一个值得资深读者深思的"先发劣势"案例。
+        </p>
+
+        <h3>主导工程范式：从 RAG 到"多模态 RAG"与原生 vision-language 调用</h3>
+        <p>
+          应用层最大的工程变化是：<strong>PDF 不再需要 OCR 预处理</strong>。
+          Claude 3 Opus 与 GPT-4o 都能直接消化扫描件、表格、流程图。<code>pdf2image → vision API</code>
+          的两步流程取代了 OCR + 文本分块 + 向量化的复杂栈，许多文档智能创业公司在 2024 年
+          被迫重新定义价值主张。同时音频也开始原生化 —— OpenAI Realtime API（2024.10）、
+          ElevenLabs Conversational AI 等让"语音 agent"从拼接式（ASR + LLM + TTS）
+          走向端到端低延迟。
+        </p>
+
+        <h3>这个阶段为什么会终结</h3>
+        <p>
+          多模态扩展了"输入"，但没有显著改善"思考"。在复杂数学、长链推理、agent 任务上，
+          模型仍频繁出错。MATH、AIME、GPQA 等高难度基准上的得分长期徘徊。
+          同时，<strong>scaling law 红利可见地放缓</strong> —— GPT-5 计划被反复延期，
+          预训练规模回报递减成为公开讨论。行业需要新的能力来源 —— 推理时计算（test-time compute）
+          成为答案。
+        </p>
+      </div>
+    </div>
+
+    <!-- ─── PHASE IV ─── -->
+    <div class="phase">
+      <div class="phase-meta">
+        <span class="roman">IV</span>
+        <span class="when">2024.09 – 2025</span>
+        <span class="tagline">推理革命<br>The Reasoning Revolution</span>
+      </div>
+      <div class="phase-body">
+        <h3>触发：o1 与 DeepSeek-R1 双重冲击</h3>
+        <p>
+          2024 年 9 月 OpenAI 发布 <strong>o1-preview</strong>，明确把"<em>测试时强化学习产生的思考链</em>"
+          作为一类新的能力来源 —— 模型在回答前内部生成长思考序列。o1 在 IMO 选拔、Codeforces、
+          GPQA 等高难基准上把 SOTA 抬升 10+ 个百分点。但 o1 是闭源的，思考过程隐藏，
+          训练方法不公开。
+        </p>
+
+        <p>
+          真正的冲击发生在 <strong>2025 年 1 月 20 日</strong> —— 杭州 DeepSeek 发布 R1，
+          这是<em>第一个能力对标 o1、且权重 + 训练方法（GRPO）完全开源的推理模型</em>。
+          更震撼的是成本：DeepSeek 公开声称其训练集群规模仅为前沿西方实验室的一个数量级以下，
+          训练成本不到 600 万美元。市场反应剧烈：英伟达单日蒸发约 6000 亿美元市值，
+          整个"前沿 AI 必须烧百亿美金"的叙事被撕开第一道口子。
+        </p>
+
+        <aside class="callout">
+          <h5>DeepSeek-R1 为什么是技术分水岭</h5>
+          <p>
+            R1 证明了三件事：（1）<strong>强化学习可以在没有人类标注的思考链数据下，
+            从基础模型中"激发"出 self-verification 与 backtracking 行为</strong>
+            （R1-Zero 实验）；（2）<strong>推理能力可以蒸馏到 1.5B–32B 的小模型中</strong>，
+            且保留大部分性能；（3）<strong>训练 recipe 公开 + MIT 许可</strong>，
+            意味着前沿能力的"国家级护城河"远没有此前认为的那么深。
+            其后续 V3.2-Speciale 在 IMO 2025、ICPC World Finals、IOI 2025 上拿到金牌级表现。
+          </p>
+        </aside>
+
+        <h3>Test-time compute 成为新的 scaling axis</h3>
+        <p>
+          整个 2025 年，<em>把更多计算花在推理时</em> 成为各家追逐的方向。
+          OpenAI o3、Anthropic Claude 3.7 Sonnet（带 extended thinking 开关）、
+          Gemini 2.5 Pro Deep Think、Qwen QwQ、Mistral Magistral 全都基于该范式。
+          一个有趣的工程后果：<strong>API 计费的"思考 token"</strong> 成为新的成本类目，
+          产品定价开始按"思考预算"分级。
+        </p>
+
+        <h3>2025 下半年的稳态：四家大厂 + 中国开源</h3>
+        <p>
+          2025 年 8 月 OpenAI 发布 GPT-5（统一路由：简单查询走快速模型，复杂查询触发推理路径）。
+          11 月 Anthropic 推出 Claude Opus 4.5，进一步把 SWE-bench Verified 抬到 80%+；
+          12 月 Google 发布 Gemini 3，OpenAI 内部出现著名的"<strong>Code Red</strong>"应对。
+          开源阵营则由 DeepSeek V3.2、Qwen 3.5、LLaMA 4、GLM-5 五强领跑。
+          值得指出的是，<strong>前沿闭源与最强开源的差距从 2023 年的约 24 个月，
+          压缩到 2026 年初的 6–12 个月</strong>。
+        </p>
+
+        <h3>这个阶段为什么会被吞并</h3>
+        <p>
+          推理能力的提升解锁了一个先前不可能的应用形态：<strong>长链工具调用智能体</strong>。
+          一个能可靠完成 50–100 次工具调用、维持 1–5 小时任务连贯性的模型，
+          已经不只是"聊天助手"。当 Claude Code、Cursor Agent、Codex 等产品在 2025 年
+          快速吃下软件工程的实际工作量，对话框作为主交互形态的合法性开始动摇。
+          阶段 V 的智能体范式由此开启。
+        </p>
+      </div>
+    </div>
+
+    <!-- ─── PHASE V ─── -->
+    <div class="phase">
+      <div class="phase-meta">
+        <span class="roman">V</span>
+        <span class="when">2025 – 2026 (进行中)</span>
+        <span class="tagline">智能体与生产化<br>Agents &amp; Productization</span>
+      </div>
+      <div class="phase-body">
+        <h3>触发：Computer Use + MCP 协议</h3>
+        <p>
+          2024 年 10 月 Anthropic 发布 Computer Use —— Claude 3.5 Sonnet 第一个具备
+          原生屏幕理解 + 鼠标键盘控制能力的公开前沿模型。同期 Anthropic 在 11 月
+          开源 <strong>Model Context Protocol（MCP）</strong>，一个基于 JSON-RPC 2.0
+          的双向接口标准，让 LLM 与外部工具/数据源的连接从"为每个 API 写一段胶水代码"
+          变成"接入一个标准化的 server"。
+        </p>
+
+        <p>
+          MCP 的采纳速度超过历史上所有 AI 相关协议：2025 年 3 月 OpenAI 宣布全面支持；
+          4 月 Google DeepMind 跟进 Gemini；2025 年内 Microsoft、AWS、GitHub、Cloudflare
+          全部加入；2025 年 12 月 MCP 治理权移交给新成立的 Linux 基金会 Agentic AI Foundation。
+          到 2026 年 5 月，活跃 MCP server 超过 <strong>10,000</strong>，
+          注册工具 17.7 万个，月 SDK 下载量 9700 万 —— 这是 Docker / Kubernetes 级别的
+          采纳曲线。
+        </p>
+
+        <h3>编码智能体：第一个真正"端到端工作"的应用类目</h3>
+
+        <figure>
+          <svg viewBox="0 0 900 360" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto;">
+            <!-- Title -->
+            <text x="20" y="30" font-family="Inter" font-size="12" font-weight="700" letter-spacing="2" fill="#a8311e">SWE-BENCH VERIFIED 进展</text>
+            <text x="20" y="50" font-family="Noto Serif SC" font-size="16" font-weight="700" fill="#1a1612">编码智能体能力的"火箭般"上升</text>
+
+            <!-- Axes -->
+            <line x1="80" y1="320" x2="860" y2="320" stroke="#1a1612" stroke-width="1.5"/>
+            <line x1="80" y1="80" x2="80" y2="320" stroke="#1a1612" stroke-width="1.5"/>
+
+            <!-- Y-axis labels -->
+            <g font-family="JetBrains Mono" font-size="10" fill="#6b5d52">
+              <text x="70" y="320" text-anchor="end">0%</text>
+              <text x="70" y="272" text-anchor="end">20%</text>
+              <text x="70" y="224" text-anchor="end">40%</text>
+              <text x="70" y="176" text-anchor="end">60%</text>
+              <text x="70" y="128" text-anchor="end">80%</text>
+              <text x="70" y="80" text-anchor="end">100%</text>
+            </g>
+
+            <!-- Gridlines -->
+            <g stroke="#d9c8a8" stroke-width="0.3" stroke-dasharray="2,3">
+              <line x1="80" y1="272" x2="860" y2="272"/>
+              <line x1="80" y1="224" x2="860" y2="224"/>
+              <line x1="80" y1="176" x2="860" y2="176"/>
+              <line x1="80" y1="128" x2="860" y2="128"/>
+            </g>
+
+            <!-- X-axis labels -->
+            <g font-family="JetBrains Mono" font-size="10" fill="#6b5d52">
+              <text x="130" y="340" text-anchor="middle">2023.10</text>
+              <text x="240" y="340" text-anchor="middle">2024.04</text>
+              <text x="350" y="340" text-anchor="middle">2024.10</text>
+              <text x="460" y="340" text-anchor="middle">2025.04</text>
+              <text x="570" y="340" text-anchor="middle">2025.10</text>
+              <text x="680" y="340" text-anchor="middle">2026.01</text>
+              <text x="790" y="340" text-anchor="middle">2026.05</text>
+            </g>
+
+            <!-- Data line (SWE-bench progression) -->
+            <!-- 2023.10 SWE-bench launches, ~2% best; 2024.04 ~13% (Devin); 2024.10 ~49% (Claude 3.5); 2025.04 ~64%; 2025.10 ~77.2% (Sonnet 4.5); 2026.01 ~80.9% (Opus 4.6); 2026.05 ~80%+ -->
+            <polyline points="130,316 240,289 350,202 460,168 570,135 680,127 790,124"
+                      fill="none" stroke="#a8311e" stroke-width="3"/>
+
+            <!-- Points -->
+            <g>
+              <circle cx="130" cy="316" r="5" fill="#1a1612"/>
+              <text x="130" y="305" text-anchor="middle" font-family="Inter" font-size="10" fill="#1a1612">2%</text>
+              <text x="130" y="365" text-anchor="middle" font-family="Inter" font-size="9" fill="#6b5d52">基线</text>
+
+              <circle cx="240" cy="289" r="5" fill="#1a1612"/>
+              <text x="240" y="278" text-anchor="middle" font-family="Inter" font-size="10" fill="#1a1612">13.9%</text>
+              <text x="240" y="365" text-anchor="middle" font-family="Inter" font-size="9" fill="#6b5d52">Devin</text>
+
+              <circle cx="350" cy="202" r="6" fill="#a8311e"/>
+              <text x="350" y="191" text-anchor="middle" font-family="Inter" font-size="10" fill="#1a1612" font-weight="700">49%</text>
+              <text x="350" y="365" text-anchor="middle" font-family="Inter" font-size="9" fill="#6b5d52">Claude 3.5</text>
+
+              <circle cx="460" cy="168" r="6" fill="#a8311e"/>
+              <text x="460" y="157" text-anchor="middle" font-family="Inter" font-size="10" fill="#1a1612" font-weight="700">64%</text>
+              <text x="460" y="365" text-anchor="middle" font-family="Inter" font-size="9" fill="#6b5d52">Claude 3.7</text>
+
+              <circle cx="570" cy="135" r="7" fill="#a8311e"/>
+              <text x="570" y="124" text-anchor="middle" font-family="Inter" font-size="10" fill="#1a1612" font-weight="700">77.2%</text>
+              <text x="570" y="365" text-anchor="middle" font-family="Inter" font-size="9" fill="#6b5d52">Sonnet 4.5</text>
+
+              <circle cx="680" cy="127" r="8" fill="#a8311e"/>
+              <text x="680" y="116" text-anchor="middle" font-family="Inter" font-size="10" fill="#1a1612" font-weight="700">80.9%</text>
+              <text x="680" y="365" text-anchor="middle" font-family="Inter" font-size="9" fill="#6b5d52">Opus 4.5</text>
+
+              <circle cx="790" cy="124" r="8" fill="#a8311e"/>
+              <text x="790" y="113" text-anchor="middle" font-family="Inter" font-size="10" fill="#1a1612" font-weight="700">≥80%</text>
+              <text x="790" y="365" text-anchor="middle" font-family="Inter" font-size="9" fill="#6b5d52">GPT-5.2/Opus 4.7</text>
+            </g>
+
+            <!-- Annotation -->
+            <g font-family="Inter" font-size="11" fill="#6b5d52">
+              <text x="600" y="280" font-style="italic">人类专业工程师基线约 73%</text>
+              <line x1="600" y1="285" x2="600" y2="148" stroke="#6b5d52" stroke-width="0.5" stroke-dasharray="2,2"/>
+            </g>
+          </svg>
+          <figcaption>
+            <span class="fig-label">图 2 · SWE-bench Verified 进展（2023.10 – 2026.05）</span>
+            从 2% 到 80%+ 用时约 30 个月。这是 ML 基准史上少见的速度。
+            <strong>注意 2024 年下半年的拐点</strong> ——
+            正是推理模型与 agent 框架 (Claude Code、Codex CLI、Cursor Agent) 共同到位的时间。
+            目前 SWE-bench Pro（更难子集）SOTA 约 56.8% (GPT-5.3-Codex)，
+            表明"未来一年的难度还有空间"。
+          </figcaption>
+        </figure>
+
+        <p>
+          Claude Code（2025.02 推出）、OpenAI Codex CLI、Cursor Agent、Devin、Aider、
+          以及 GitHub Copilot Workspace 共同构成了第一个"真正能干活"的 agent 类目。
+          关键数据：<strong>2026 年初要求 AI 编码工具使用经验的招聘岗位同比增长 340%</strong>；
+          Cursor 付费用户 36 万；Codex CLI 首月安装量超过 100 万。
+          编码 agent 之所以率先成熟，是因为它满足三个工程条件：
+          <em>(1) 输出可机器验证（运行测试）；(2) 错误代价相对可控（git revert）；
+          (3) 训练数据充足且高质量（公开仓库 + commit 历史）</em>。
+          这三个条件不是每个领域都具备。
+        </p>
+
+        <h3>计算机使用 / 浏览器智能体：第二条收敛路径</h3>
+        <p>
+          Anthropic Computer Use（2024.10）、OpenAI Operator（2025.01）、
+          Google Project Mariner、Anthropic Claude for Chrome（2025）、Cowork（2026）
+          构成了一类"通过模拟人类操作 GUI 来完成任务"的智能体。
+          OSWorld 基准上 Claude Opus 4.7 当前 SOTA 约 78%，但实际生产可靠性仍显著低于
+          编码 agent —— 主要瓶颈是<strong>视觉理解的鲁棒性</strong> 与
+          <strong>长时间任务的错误累积</strong>。这是 2026 年最活跃的研究前沿之一。
+        </p>
+
+        <h3>METR 的"任务时长翻番"曲线</h3>
+        <p>
+          METR (Model Evaluation &amp; Threat Research) 跟踪一个有意思的指标：
+          前沿模型能以 50% 成功率完成的<em>软件工程任务长度</em>（按人类完成所需时间计算）。
+          2023 年初这个数字是几分钟；2024 年初约 30 分钟；2025 年 11 月 Claude Opus 4.5
+          达到约 <strong>5 小时</strong>。<em>每 5–7 个月翻一番</em>。
+          如果这条曲线延伸到 2026 年底，最强模型将能独立处理 20 小时级别的任务 ——
+          即<strong>半个标准工作周</strong>。
+        </p>
+
+        <h3>这个阶段尚未终结，但其下一道关卡正在显形</h3>
+        <p>
+          MCP 标准化解决了"agent 怎么连工具"，但没有解决"多个 agent 怎么协作"。
+          A2A（Agent-to-Agent）协议、Anthropic 的 Skills 系统、OpenAI 的 Agent Builder
+          都在试图回答这个问题。同时，<strong>身份、授权与审计</strong> 成为企业部署 agent
+          的最大障碍 —— 一个能用你账号点击发送邮件的 agent，需要怎样的权限模型？
+          MCP 在 2025 年 6 月规范更新中强制 PKCE、引入 Cross App Access，
+          但这仍是个未完成的工程命题。
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ 模型表格 ═══════════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-num">表 一 · Table 1</div>
+    <h2 class="section-title">主要前沿模型纵览<span class="sub">a reference table of frontier releases, 2022 Q4 – 2026 Q2</span></h2>
+    <p class="section-intro">
+      下表筛选了对应用层产生显著影响的模型发布（不追求穷尽）。
+      <span class="tag" style="background:#a8311e;color:#f4ede2;padding:2px 6px;font-family:Inter;font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;">范式</span>
+      列标记其代表的技术拐点。
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:90px">发布</th>
+          <th style="width:180px">模型</th>
+          <th style="width:110px">组织</th>
+          <th>意义 / 范式拐点</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="date">2022.11.30</td><td class="model">ChatGPT (GPT-3.5)</td><td>OpenAI</td><td><span class="tag s">奇点</span>消费级 RLHF + 对话 UI；5 天 100 万用户</td></tr>
+        <tr><td class="date">2023.02.24</td><td class="model">LLaMA 1</td><td>Meta</td><td><span class="tag">开源</span>权重次月泄漏，触发开源 Cambrian explosion</td></tr>
+        <tr><td class="date">2023.03.14</td><td class="model">GPT-4</td><td>OpenAI</td><td><span class="tag s">代际</span>首个广泛验证的"接近通用智能"模型；多模态视觉</td></tr>
+        <tr><td class="date">2023.05.11</td><td class="model">Claude 100K</td><td>Anthropic</td><td><span class="tag t">长文</span>上下文从 KB 跃迁到百 KB 级</td></tr>
+        <tr><td class="date">2023.06.13</td><td class="model">GPT-4 Function Calling</td><td>OpenAI</td><td><span class="tag">工程</span>把"让 LLM 输出 JSON"标准化为 API 一等公民</td></tr>
+        <tr><td class="date">2023.09.27</td><td class="model">Mistral 7B</td><td>Mistral AI</td><td><span class="tag">开源</span>欧洲明星实验室成立；7B 击败更大对手</td></tr>
+        <tr><td class="date">2023.11.06</td><td class="model">GPT-4 Turbo (128K)</td><td>OpenAI</td><td><span class="tag t">扩展</span>128K 上下文 + 价格 3x 下降</td></tr>
+        <tr><td class="date">2024.02.15</td><td class="model">Sora (preview)</td><td>OpenAI</td><td><span class="tag t">视频</span>"GPT-1 时刻 of video"；首次震撼级文生视频</td></tr>
+        <tr><td class="date">2024.02.15</td><td class="model">Gemini 1.5 Pro</td><td>Google DeepMind</td><td><span class="tag t">百万</span>第一个百万 token 商用上下文</td></tr>
+        <tr><td class="date">2024.03.04</td><td class="model">Claude 3 (Opus / Sonnet / Haiku)</td><td>Anthropic</td><td><span class="tag t">多模</span>原生视觉 + 三档分级 SKU 模式确立</td></tr>
+        <tr><td class="date">2024.04.18</td><td class="model">LLaMA 3</td><td>Meta</td><td><span class="tag">开源</span>首次开源模型与前沿闭源差距 &lt; 12 个月</td></tr>
+        <tr><td class="date">2024.05.13</td><td class="model">GPT-4o</td><td>OpenAI</td><td><span class="tag t">实时</span>端到端多模态；320ms 语音延迟</td></tr>
+        <tr><td class="date">2024.06.20</td><td class="model">Claude 3.5 Sonnet</td><td>Anthropic</td><td><span class="tag s">编码</span>软件工程领域质变；artifacts 概念引入</td></tr>
+        <tr><td class="date">2024.09.12</td><td class="model">o1-preview</td><td>OpenAI</td><td><span class="tag s">推理</span>第一个公开的"测试时强化学习"前沿模型</td></tr>
+        <tr><td class="date">2024.10.22</td><td class="model">Computer Use</td><td>Anthropic</td><td><span class="tag g">智能体</span>首个原生屏幕控制能力的前沿模型</td></tr>
+        <tr><td class="date">2024.11.25</td><td class="model">MCP 协议发布</td><td>Anthropic</td><td><span class="tag g">协议</span>奠定 agent 工具生态的事实标准</td></tr>
+        <tr><td class="date">2024.12.26</td><td class="model">DeepSeek V3</td><td>DeepSeek</td><td><span class="tag">开源</span>671B MoE，训练成本 &lt; 600 万美元</td></tr>
+        <tr><td class="date">2025.01.20</td><td class="model">DeepSeek-R1</td><td>DeepSeek</td><td><span class="tag s">震荡</span>第一个开源推理模型对标 o1；引发 NVIDIA 单日蒸发 6000 亿</td></tr>
+        <tr><td class="date">2025.02.24</td><td class="model">Claude 3.7 (extended thinking)</td><td>Anthropic</td><td><span class="tag s">推理</span>把"思考开关"暴露给用户</td></tr>
+        <tr><td class="date">2025.04.05</td><td class="model">LLaMA 4 (Scout / Maverick)</td><td>Meta</td><td><span class="tag">开源</span>10M 上下文窗口 (Scout)</td></tr>
+        <tr><td class="date">2025.05.20</td><td class="model">Veo 3</td><td>Google</td><td><span class="tag t">视频+音频</span>首个单次生成视频 + 同步音频的商用模型</td></tr>
+        <tr><td class="date">2025.05.22</td><td class="model">Claude 4 (Opus / Sonnet)</td><td>Anthropic</td><td><span class="tag s">代际</span>SWE-bench 72.5%；Claude Code 一同推出</td></tr>
+        <tr><td class="date">2025.08.07</td><td class="model">GPT-5</td><td>OpenAI</td><td><span class="tag s">代际</span>统一路由模型；推理与对话融合</td></tr>
+        <tr><td class="date">2025.08.26</td><td class="model">Gemini 2.5 Flash Image ("Nano-Banana")</td><td>Google</td><td><span class="tag t">图像</span>原生图像编辑能力超越 GPT-Image-1</td></tr>
+        <tr><td class="date">2025.09.30</td><td class="model">Sora 2</td><td>OpenAI</td><td><span class="tag t">视频</span>原生音频 + iOS 社交 app</td></tr>
+        <tr><td class="date">2025.11.10</td><td class="model">Claude Opus 4.5</td><td>Anthropic</td><td><span class="tag s">代际</span>SWE-bench 80.9%；METR 任务时长达 5 小时</td></tr>
+        <tr><td class="date">2025.12.x</td><td class="model">Gemini 3</td><td>Google</td><td><span class="tag s">代际</span>触发 OpenAI 内部 "Code Red"</td></tr>
+        <tr><td class="date">2026.04.16</td><td class="model">Claude Opus 4.7</td><td>Anthropic</td><td><span class="tag s">代际</span>1M context；computer use OSWorld 78%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ 技术栈对比 ═══════════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-num">图 三 · Figure 3</div>
+    <h2 class="section-title">应用栈的三次重构<span class="sub">how the production stack has been rebuilt three times</span></h2>
+    <p class="section-intro">
+      下图叠加了 2023、2024、2026 年的"典型生产栈"——
+      每次范式跃迁不只是加一层，而是<em>替换或合并</em>之前的某些层。
+      许多 2023 年红极一时的中间件公司，在 2025 年面临着商业模式被模型本身吞并的现实。
+    </p>
+
+    <figure class="full">
+      <svg viewBox="0 0 1200 600" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto; background:var(--paper-soft); border:1px solid var(--rule);">
+        <!-- Column headers -->
+        <g font-family="Noto Serif SC" font-weight="700" font-size="18" fill="#1a1612">
+          <text x="200" y="40" text-anchor="middle">2023 · Prompt + RAG 栈</text>
+          <text x="600" y="40" text-anchor="middle">2024 · Multimodal + Tool 栈</text>
+          <text x="1000" y="40" text-anchor="middle">2026 · Agent-native 栈</text>
+        </g>
+
+        <!-- Stack 2023 -->
+        <g transform="translate(80,80)">
+          <rect x="0" y="0" width="240" height="50" fill="#fff" stroke="#1a1612" stroke-width="1.5"/>
+          <text x="120" y="30" text-anchor="middle" font-family="Inter" font-size="13" font-weight="600" fill="#1a1612">React 前端</text>
+
+          <rect x="0" y="60" width="240" height="50" fill="#fff" stroke="#1a1612" stroke-width="1.5"/>
+          <text x="120" y="90" text-anchor="middle" font-family="Inter" font-size="13" font-weight="600" fill="#1a1612">业务后端 API</text>
+
+          <rect x="0" y="120" width="240" height="50" fill="#fde8d8" stroke="#a8311e" stroke-width="1.5"/>
+          <text x="120" y="150" text-anchor="middle" font-family="Inter" font-size="13" font-weight="600" fill="#1a1612">LangChain / 手工 chain</text>
+
+          <rect x="0" y="180" width="240" height="50" fill="#fde8d8" stroke="#a8311e" stroke-width="1.5"/>
+          <text x="120" y="210" text-anchor="middle" font-family="Inter" font-size="13" font-weight="600" fill="#1a1612">Embeddings (Ada/BGE)</text>
+
+          <rect x="0" y="240" width="240" height="50" fill="#fde8d8" stroke="#a8311e" stroke-width="1.5"/>
+          <text x="120" y="270" text-anchor="middle" font-family="Inter" font-size="13" font-weight="600" fill="#1a1612">向量库 (Pinecone/Chroma)</text>
+
+          <rect x="0" y="300" width="240" height="50" fill="#fde8d8" stroke="#a8311e" stroke-width="1.5"/>
+          <text x="120" y="330" text-anchor="middle" font-family="Inter" font-size="13" font-weight="600" fill="#1a1612">文本分块 + OCR</text>
+
+          <rect x="0" y="360" width="240" height="50" fill="#fff" stroke="#1a1612" stroke-width="1.5"/>
+          <text x="120" y="390" text-anchor="middle" font-family="Inter" font-size="13" font-weight="600" fill="#1a1612">PostgreSQL</text>
+
+          <rect x="0" y="420" width="240" height="50" fill="#f4ede2" stroke="#1a1612" stroke-width="2"/>
+          <text x="120" y="450" text-anchor="middle" font-family="Noto Serif SC" font-size="14" font-weight="700" fill="#a8311e">LLM API · GPT-3.5/4</text>
+
+          <text x="-10" y="475" text-anchor="end" font-family="JetBrains Mono" font-size="10" fill="#6b5d52" transform="rotate(-90, -10, 475)">8 层</text>
+        </g>
+
+        <!-- Stack 2024 -->
+        <g transform="translate(480,80)">
+          <rect x="0" y="0" width="240" height="50" fill="#fff" stroke="#1a1612" stroke-width="1.5"/>
+          <text x="120" y="30" text-anchor="middle" font-family="Inter" font-size="13" font-weight="600" fill="#1a1612">React 前端</text>
+
+          <rect x="0" y="60" width="240" height="50" fill="#fff" stroke="#1a1612" stroke-width="1.5"/>
+          <text x="120" y="90" text-anchor="middle" font-family="Inter" font-size="13" font-weight="600" fill="#1a1612">业务后端 API</text>
+
+          <rect x="0" y="120" width="240" height="50" fill="#d8eef0" stroke="#285059" stroke-width="1.5"/>
+          <text x="120" y="150" text-anchor="middle" font-family="Inter" font-size="13" font-weight="600" fill="#1a1612">Tool / Function 调用层</text>
+
+          <rect x="0" y="180" width="240" height="50" fill="#fde8d8" stroke="#a8311e" stroke-width="1.5"/>
+          <text x="120" y="210" text-anchor="middle" font-family="Inter" font-size="13" font-weight="600" fill="#1a1612">混合检索 (BM25+向量)</text>
+
+          <rect x="0" y="240" width="240" height="50" fill="#fde8d8" stroke="#a8311e" stroke-width="1.5"/>
+          <text x="120" y="270" text-anchor="middle" font-family="Inter" font-size="13" font-weight="600" fill="#1a1612">向量库 (整合到 PG)</text>
+
+          <rect x="0" y="300" width="240" height="50" fill="#d8eef0" stroke="#285059" stroke-width="1.5"/>
+          <text x="120" y="330" text-anchor="middle" font-family="Inter" font-size="13" font-weight="600" fill="#1a1612">原生 vision (无需 OCR)</text>
+
+          <rect x="0" y="360" width="240" height="50" fill="#fff" stroke="#1a1612" stroke-width="1.5"/>
+          <text x="120" y="390" text-anchor="middle" font-family="Inter" font-size="13" font-weight="600" fill="#1a1612">PostgreSQL + pgvector</text>
+
+          <rect x="0" y="420" width="240" height="50" fill="#f4ede2" stroke="#1a1612" stroke-width="2"/>
+          <text x="120" y="450" text-anchor="middle" font-family="Noto Serif SC" font-size="14" font-weight="700" fill="#a8311e">多模态 LLM API</text>
+
+          <text x="-10" y="475" text-anchor="end" font-family="JetBrains Mono" font-size="10" fill="#6b5d52" transform="rotate(-90, -10, 475)">8 层 (重构)</text>
+        </g>
+
+        <!-- Stack 2026 -->
+        <g transform="translate(880,80)">
+          <rect x="0" y="0" width="240" height="50" fill="#fff" stroke="#1a1612" stroke-width="1.5"/>
+          <text x="120" y="30" text-anchor="middle" font-family="Inter" font-size="13" font-weight="600" fill="#1a1612">用户界面 (chat / GUI)</text>
+
+          <rect x="0" y="60" width="240" height="50" fill="#fef0d8" stroke="#b88840" stroke-width="2"/>
+          <text x="120" y="90" text-anchor="middle" font-family="Inter" font-size="13" font-weight="700" fill="#1a1612">Agent 编排层</text>
+
+          <rect x="0" y="120" width="240" height="50" fill="#fef0d8" stroke="#b88840" stroke-width="2"/>
+          <text x="120" y="150" text-anchor="middle" font-family="Inter" font-size="13" font-weight="700" fill="#1a1612">MCP Server Gateway</text>
+
+          <rect x="0" y="180" width="240" height="50" fill="#fef0d8" stroke="#b88840" stroke-width="1.5"/>
+          <text x="120" y="210" text-anchor="middle" font-family="Inter" font-size="13" font-weight="600" fill="#1a1612">MCP servers (10K+ 可选)</text>
+
+          <rect x="0" y="240" width="240" height="50" fill="#d8eef0" stroke="#285059" stroke-width="1.5"/>
+          <text x="120" y="270" text-anchor="middle" font-family="Inter" font-size="13" font-weight="600" fill="#1a1612">长上下文 (1M+) · "RAG-lite"</text>
+
+          <rect x="0" y="300" width="240" height="50" fill="#fff" stroke="#1a1612" stroke-width="1.5"/>
+          <text x="120" y="330" text-anchor="middle" font-family="Inter" font-size="13" font-weight="600" fill="#1a1612">观测 / 审计 / 沙箱</text>
+
+          <rect x="0" y="360" width="240" height="50" fill="#fff" stroke="#1a1612" stroke-width="1.5"/>
+          <text x="120" y="390" text-anchor="middle" font-family="Inter" font-size="13" font-weight="600" fill="#1a1612">PostgreSQL</text>
+
+          <rect x="0" y="420" width="240" height="50" fill="#f4ede2" stroke="#1a1612" stroke-width="2"/>
+          <text x="120" y="450" text-anchor="middle" font-family="Noto Serif SC" font-size="14" font-weight="700" fill="#a8311e">推理型 LLM (thinking budget)</text>
+
+          <text x="-10" y="475" text-anchor="end" font-family="JetBrains Mono" font-size="10" fill="#6b5d52" transform="rotate(-90, -10, 475)">8 层 (再重构)</text>
+        </g>
+
+        <!-- Arrows between stacks -->
+        <g stroke="#a8311e" stroke-width="1.5" fill="#a8311e">
+          <path d="M 330 250 L 470 250" marker-end="url(#arrow)"/>
+          <path d="M 730 250 L 870 250" marker-end="url(#arrow)"/>
+        </g>
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#a8311e"/>
+          </marker>
+        </defs>
+
+        <!-- Legend / observations at bottom -->
+        <g font-family="Inter" font-size="11" fill="#3d342c" transform="translate(80, 565)">
+          <rect width="14" height="14" fill="#fde8d8" stroke="#a8311e"/><text x="22" y="11">2023 引入 / 重要</text>
+          <rect x="180" width="14" height="14" fill="#d8eef0" stroke="#285059"/><text x="202" y="11">2024 引入</text>
+          <rect x="340" width="14" height="14" fill="#fef0d8" stroke="#b88840"/><text x="362" y="11">2025–26 引入</text>
+        </g>
+      </svg>
+      <figcaption>
+        <span class="fig-label">图 3 · 三次栈重构</span>
+        关键观察：<strong>(1)</strong> 文本分块 + OCR 层在 2024 年被原生 vision 吸收，
+        让一批 OCR / 文档智能创业公司失去差异化；<strong>(2)</strong> LangChain 类编排层
+        在 2025–26 被 Agent SDK + MCP 取代，但其"链式调用"心智模型保留；
+        <strong>(3)</strong> 专用向量库在 2024 后大量被 PostgreSQL + pgvector 吞并 ——
+        除非对延迟 / 规模有极端要求；<strong>(4)</strong> "MCP server gateway" 是 2025–26
+        新出现的层，处理认证、限流、审计等企业级关切。
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ 商业格局与数据 ═══════════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-num">数据 · The Numbers</div>
+    <h2 class="section-title">商业格局与采纳数据<span class="sub">market structure and adoption metrics</span></h2>
+    <p class="section-intro">
+      到 2025 年底，生成式 AI 已经从"实验性预算"过渡到"主要 IT 预算线"。
+      但这种总量繁荣掩盖了大量微观失败 —— 资深从业者应该同时持有两种数字：
+      <em>市场总量</em> 与 <em>项目成功率</em>。
+    </p>
+
+    <figure>
+      <svg viewBox="0 0 900 360" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;">
+        <text x="20" y="30" font-family="Inter" font-size="12" font-weight="700" letter-spacing="2" fill="#a8311e">企业生成式 AI 支出</text>
+        <text x="20" y="50" font-family="Noto Serif SC" font-size="16" font-weight="700" fill="#1a1612">三年增长 21.7 倍</text>
+
+        <!-- Axes -->
+        <line x1="80" y1="320" x2="860" y2="320" stroke="#1a1612" stroke-width="1.5"/>
+        <line x1="80" y1="80" x2="80" y2="320" stroke="#1a1612" stroke-width="1.5"/>
+
+        <!-- Y labels (0 - 40B) -->
+        <g font-family="JetBrains Mono" font-size="10" fill="#6b5d52">
+          <text x="70" y="320" text-anchor="end">$0</text>
+          <text x="70" y="260" text-anchor="end">$10B</text>
+          <text x="70" y="200" text-anchor="end">$20B</text>
+          <text x="70" y="140" text-anchor="end">$30B</text>
+          <text x="70" y="80"  text-anchor="end">$40B</text>
+        </g>
+        <g stroke="#d9c8a8" stroke-width="0.3" stroke-dasharray="2,3">
+          <line x1="80" y1="260" x2="860" y2="260"/>
+          <line x1="80" y1="200" x2="860" y2="200"/>
+          <line x1="80" y1="140" x2="860" y2="140"/>
+          <line x1="80" y1="80"  x2="860" y2="80"/>
+        </g>
+
+        <!-- Bars -->
+        <!-- 2023: $1.7B (y=320, height=10.2) -->
+        <rect x="180" y="310" width="120" height="10" fill="#1a1612"/>
+        <text x="240" y="305" text-anchor="middle" font-family="Inter" font-size="11" font-weight="700" fill="#1a1612">$1.7B</text>
+        <text x="240" y="340" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#6b5d52">2023</text>
+
+        <!-- 2024: $11.5B (y=320 to height=69) -->
+        <rect x="380" y="251" width="120" height="69" fill="#3d342c"/>
+        <text x="440" y="246" text-anchor="middle" font-family="Inter" font-size="11" font-weight="700" fill="#1a1612">$11.5B</text>
+        <text x="440" y="340" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#6b5d52">2024</text>
+
+        <!-- 2025: $37B (y=320 to height=222) -->
+        <rect x="580" y="98" width="120" height="222" fill="#a8311e"/>
+        <text x="640" y="92" text-anchor="middle" font-family="Inter" font-size="13" font-weight="700" fill="#a8311e">$37B</text>
+        <text x="640" y="340" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#6b5d52">2025</text>
+
+        <!-- Growth annotations -->
+        <g font-family="Inter" font-size="11" fill="#6b5d52">
+          <text x="340" y="195" font-style="italic">×6.8</text>
+          <text x="540" y="180" font-style="italic">×3.2</text>
+        </g>
+
+        <!-- Right column: percentage breakdown -->
+        <g transform="translate(720, 90)" font-family="Inter" font-size="11">
+          <text x="0" y="0" font-size="11" font-weight="700" fill="#1a1612" letter-spacing="1">2025 支出分布</text>
+          <rect x="0" y="15" width="120" height="10" fill="#a8311e"/>
+          <text x="0" y="44" fill="#1a1612">应用层 &gt; 50%</text>
+          <rect x="0" y="60" width="80" height="10" fill="#b88840"/>
+          <text x="0" y="89" fill="#1a1612">模型 API 25%</text>
+          <rect x="0" y="105" width="60" height="10" fill="#285059"/>
+          <text x="0" y="134" fill="#1a1612">基础设施 15%</text>
+          <rect x="0" y="150" width="40" height="10" fill="#3d342c"/>
+          <text x="0" y="179" fill="#1a1612">其他 10%</text>
+        </g>
+      </svg>
+      <figcaption>
+        <span class="fig-label">图 4 · 企业 GenAI 总支出</span>
+        数据来源 Menlo Ventures《2025 State of Generative AI in the Enterprise》，
+        基于约 500 位美国企业决策者的调研 + 自底向上建模。该值仅涵盖企业级支出，
+        不含消费者端订阅。注意 2025 年支出 <strong>超过 50% 流向应用层</strong>
+        而非模型 API，标志着市场从"基础设施豪赌"过渡到"短期生产力红利"。
+      </figcaption>
+    </figure>
+
+    <div class="prose">
+      <h3>四组关键统计</h3>
+
+      <p>
+        <strong>采纳率与渗透：</strong>
+        78% 的组织在至少一个业务职能中使用 AI（2023 年为 55%）；71% 在多个职能中常规使用
+        生成式 AI（2023 年 33%）；23% 的组织正在<em>规模化</em>部署 agentic AI 系统，
+        另有 39% 处于实验阶段。但在任一具体职能内，规模化 agent 的组织 <em>不超过 10%</em> ——
+        说明"全公司部署 agent"在 2026 年仍然罕见。
+      </p>
+
+      <p>
+        <strong>员工使用：</strong>
+        56% 的美国员工在工作任务中使用生成式 AI；31% 经常使用（9% 每日、17% 每周、5% 每月）。
+        领导层使用率 33%，几乎是个人贡献者（16%）的两倍 —— 这与人们的直觉相反，
+        资深读者应该注意这意味着 <em>顶层的预期 / 信号通常超前于实际落地</em>。
+      </p>
+
+      <p>
+        <strong>投资规模：</strong>
+        2024 年美国私募 AI 投资达到 1091 亿美元，是中国的 12 倍。2024 年公司 AI 总投资
+        达 2523 亿美元，私募增长 44.5% YoY。Gartner 预测 2025 年全球 AI 支出 1.5 万亿美元。
+        AI agent 类创业公司 2024 年融资 38 亿美元，几乎是上一年的 3 倍。
+      </p>
+
+      <p>
+        <strong>失败率与现实：</strong>
+        据 MIT、RAND 等独立研究，<strong>70–85% 的企业 AI 项目未达预期成果</strong>。
+        42% 的公司在 2025 年放弃了大部分 AI 项目（2024 年仅 17%）。47% 的企业 AI 用户承认
+        曾基于幻觉内容做出至少一项重大业务决策。这些数字与总量繁荣并存 ——
+        它们不是矛盾，而是同一现象的两面。
+      </p>
+
+      <h3>ARR 俱乐部：第一批 10 亿美金应用</h3>
+      <p>
+        Menlo Ventures 统计，截至 2025 年底有<strong>至少 10 个产品</strong>达到 10 亿美元 ARR，
+        50 个产品突破 1 亿美元 ARR。除三大基础模型 API（OpenAI、Anthropic、Google）外，
+        高 ARR 类目集中在：<em>编码</em>（Cursor、Claude Code、Codex 共占编码品类 40 亿美元市场）、
+        <em>客服</em>、<em>销售支持</em>、<em>法律</em>（Eve 等，约 6.5 亿美元）、
+        <em>医疗</em>、以及<em>垂直市场</em>（创作者工具 3.6 亿，政府 3.5 亿）。
+        编码品类从 2024 年的 5.5 亿美元跃升到 2025 年的 40 亿美元，
+        是<strong>所有 SaaS 历史上单年增速最高的细分</strong>。
+      </p>
+
+      <h3>ChatGPT 与 Anthropic 营收</h3>
+      <p>
+        消费端：ChatGPT 在 2025 年中突破 1 亿周活跃用户。OpenAI 在 2026 年 Q1 的年化营收
+        据多个来源约为 100 亿美元，其中消费订阅约 70%、API 30%。
+        Anthropic 在 2025 年初的年化营收达 30 亿美元（同比约 10 倍），
+        其客户结构相反：约 80% 来自企业 API/Bedrock/Vertex 接入，消费端 Claude.ai 约 20%。
+        Google 的 Gemini 消费应用在 2025 年快速逼近 ChatGPT，
+        触发了 OpenAI 内部著名的"Code Red"。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ Pull Quote ═══════════════════════════ -->
+<section style="padding:40px 0;">
+  <div class="narrow">
+    <div class="pullquote">
+      <q>大模型应用领域的真正瓶颈，从未是模型能力的上限，<br>
+      而是把能力转换为可靠工作流的工程范式。</q>
+      <div class="pullquote-attr">本文核心论点</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ 未解问题 ═══════════════════════════ -->
+<section>
+  <div class="container">
+    <div class="prose">
+      <div class="section-num">未尽之事 · Open Problems</div>
+      <h2 class="section-title">2026 年的未解问题<span class="sub">where the field is genuinely stuck</span></h2>
+      <p class="section-intro">
+        以下七个问题，是即使把所有现有技术叠加起来仍无法可靠解决的命题。
+        对于资深行业研究者，这些是接下来 12–24 个月真正值得关注的"实验点"。
+      </p>
+
+      <h3>一 · 可靠性：从 80% 到 99.9%</h3>
+      <p>
+        SWE-bench 80% 听起来很高，但任何在生产部署 agent 的人都知道：
+        80% 成功率意味着<em>每 5 个任务有 1 个失败</em>，且失败模式无法预测。
+        在企业生产中，可靠性门槛通常是 99%+，agent 距此仍有数量级差距。
+        Constitutional AI、self-consistency、verifier 模型、多 agent 验证、
+        以及简单的"输出可机器验证"约束都被尝试，但还没有一个通用解。
+        当前的 <strong>METR 5 小时任务时长</strong> 数字应该结合 50% 成功率来理解 ——
+        实际可"信任"的任务时长还要小一个数量级。
+      </p>
+
+      <h3>二 · 幻觉的根因 vs. 缓解</h3>
+      <p>
+        三年来幻觉率显著下降（GPT-3.5 系统性测试约 39.6%；前沿模型在标准基准上
+        降到个位数），但<em>消除</em>幻觉仍是开放问题。Anthropic 的可解释性研究
+        (Sparse Autoencoders / Circuit Tracing) 第一次把模型内部表征拆解到可读特征级别，
+        理论上为"在内部抑制幻觉"开了一条路，但工程化距离仍远。
+        企业部署中目前依赖<em>外部验证</em>（人审、规则、双模型对比、引用强制）作为缓解，
+        而非根治。
+      </p>
+
+      <h3>三 · 长任务规划与记忆</h3>
+      <p>
+        即使最强模型，在面对需要跨越数天、涉及数百次工具调用的任务时仍会"漂移"——
+        丢失早期上下文、忘记约束、重复犯错。Long-context 不等于记忆：1M token 窗口
+        在处理多日交互时仍会出现"在窗口中存在但模型没有有效利用"的问题。
+        几种实验性方案 —— 外部 episodic memory、可学习的 retrieval、
+        Mem0 / LangMem 等中间件 —— 都没有取得突破性成功。这是 agent 走向
+        "周级 / 月级任务"的核心瓶颈。
+      </p>
+
+      <h3>四 · 多 agent 协作与 A2A 协议</h3>
+      <p>
+        MCP 解决了"agent 到工具"的标准化，但"agent 到 agent"仍处在协议草案阶段。
+        Google 的 A2A、Anthropic 的 sub-agent 模型、Microsoft AutoGen、CrewAI
+        各有路径。一个核心难题是<em>责任与授权</em>：当一个 agent 委托另一个 agent
+        执行操作时，操作的法律责任和审计链如何归属？现有的 OAuth、IAM 概念都没有对这种
+        "拟人但非人"的主体进行专门设计。
+      </p>
+
+      <h3>五 · 算力/能源约束何时硬撞？</h3>
+      <p>
+        2026 年初，第一批<strong>千兆瓦级 (GW)</strong> 训练集群开始运行
+        （xAI Colossus 2、OpenAI Stargate I 期、Anthropic + Amazon Project Rainier）。
+        但电力配套、变压器供应、冷却水使用都已经触及局部上限。
+        美国数据中心耗电预计在 2030 年达到全国 8–12%。
+        如果算力 scaling 真正硬撞墙，下一阶段的能力红利必须来自<em>算法效率</em>
+        而非粗暴堆参数 —— DeepSeek 已经证明这条路可行，但代价是研发周期被拉长。
+      </p>
+
+      <h3>六 · 对齐与可解释性</h3>
+      <p>
+        Anthropic 在 2024–2025 年发布的可解释性工作（Toy Models, SAE on Sonnet, 
+        Tracing Thoughts）让研究界第一次<em>在前沿模型尺寸上看到了内部表征</em>。
+        但这些是工具，不是答案。真正的对齐问题 —— <em>如何确保高自主性 agent
+        在长期、新颖、高风险场景下保持人类意图</em> —— 仍然是开放命题。
+        2025 年内多次发生的 agent 行为"意外"（如 Claude Opus 4 一次受控测试中显示出的
+        自我保护倾向、Anthropic 公开发表的研究文献）说明这不是科幻而是工程现实。
+      </p>
+
+      <h3>七 · 经济与劳动市场的真实影响</h3>
+      <p>
+        宏观数据显示，2024–2025 美国实际 GDP 同比增速并未显著偏离 1.4%–3.4% 的近十年区间，
+        即使在 AI 总投资 2523 亿美元的背景下。一种解释：<em>生产力红利集中在少数职能</em>
+        （软件工程 15%+ velocity gain，客服自动化等），但宏观经济中大部分产业的 AI 渗透
+        仍在早期。一个值得追踪的指标：要求 AI 编码经验的岗位同比增长 340%，
+        而纯实施岗位下降 17% —— 软件工程师作为职业本身正在被重新定义。
+        其他高知识密度行业（法律、医疗、研究）尚未到达同一拐点，但所有信号都指向
+        2026–2028 年是关键窗口。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ 中国格局 ═══════════════════════════ -->
+<section>
+  <div class="container">
+    <div class="prose">
+      <div class="section-num">区域 · The China Question</div>
+      <h2 class="section-title">中国阵营的并行轨迹<span class="sub">a parallel trajectory worth its own section</span></h2>
+      <p class="section-intro">
+        2023 年初，中国实验室普遍被认为落后前沿 18–24 个月。三年后，这一判断需要彻底修订。
+      </p>
+
+      <p class="lead">
+        2025 年 1 月 20 日 DeepSeek R1 的发布是中国 AI 史上的标志性时刻 ——
+        但更重要的不是单次事件，而是其后续的<em>持续性领先</em>。DeepSeek V3.2-Speciale
+        在 IMO 2025、CMO 2025、ICPC World Finals 2025、IOI 2025 上取得金牌级表现 ——
+        这些是<em>所有现存基准中难度最高的</em>。Qwen 3.5 系列在 HuggingFace 月下载量
+        排行榜上稳居前列。GLM-5 / GLM-5.1（智谱 / Z.ai）在 SWE-bench Pro 上达到 58.4%，
+        是当前开源模型 SOTA。
+      </p>
+
+      <p>
+        三个值得资深读者注意的结构性差异：
+      </p>
+
+      <h3>一 · 开源比例显著更高</h3>
+      <p>
+        中国头部实验室（DeepSeek、Qwen、智谱、Moonshot、MiniMax、百度文心）
+        几乎都以开源权重的方式发布前沿模型，且采用 Apache 2.0 / MIT 等真正宽松的许可。
+        相比之下，西方前沿 Meta 的 LLaMA 在 LLaMA 3.x 后再次收紧。
+        这造成一个有趣的反转：<em>2025 年开源生态的"重心"已经显著东移</em>，
+        美国"OSS 模型"的代表反而成了 Mistral 和 OpenAI 的 gpt-oss 系列。
+      </p>
+
+      <h3>二 · 硬件解耦的实际进展</h3>
+      <p>
+        在美国出口管制下，华为 Ascend 910C/B 已经成为 DeepSeek 等 lab 的训练后备方案；
+        寒武纪、燧原、壁仞构成第二梯队。这并非"完全替代英伟达"——
+        当前 Ascend 在训练效率上仍有 1.5–2x 的差距，但<em>"可用"已经成为现实</em>，
+        而 2023 年完全不是这种情况。如果硬件解耦持续推进，2026–2027 年会出现一个
+        完全独立于英伟达生态的中文 AI 栈，这是地缘政治上极重要的发展。
+      </p>
+
+      <h3>三 · 工程效率压力下的算法创新</h3>
+      <p>
+        DeepSeek V3 的 Multi-head Latent Attention (MLA)、auxiliary-loss-free MoE balancing，
+        以及 R1 的 pure RL 训练（GRPO）都来自<em>"在算力约束下被迫创新"</em>的环境。
+        这与 1990 年代日本汽车业在能源危机下发明丰田生产系统的逻辑相似 ——
+        约束可以是创新的来源。资深从业者应该关注：当西方实验室面对能源 / 监管约束时，
+        是否会反向采纳来自中国 lab 的算法 idea。
+      </p>
+
+      <aside class="callout">
+        <h5>对从业者的实操含义</h5>
+        <p>
+          对企业 AI 决策者：2026 年应用层选型不应再默认"前沿闭源更好"。
+          在大量任务上（中文处理、数学、推理、长上下文），开源 Qwen 3.5 / DeepSeek V4 / GLM-5
+          的 quality-per-dollar 显著超过同档闭源 API。对中国大陆部署而言，
+          本地部署 DeepSeek/Qwen 已经是合规、性能、成本三优的选择。
+          对国际部署，跨地缘审查是另一回事，但<em>"开源 = 落后"的预设需要彻底放弃</em>。
+        </p>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ 展望 ═══════════════════════════ -->
+<section>
+  <div class="container">
+    <div class="prose">
+      <div class="section-num">展望 · Looking Forward</div>
+      <h2 class="section-title">2026 年下半年至 2027 年<span class="sub">what to watch in the next 12–18 months</span></h2>
+
+      <h3>已经显形的五条曲线</h3>
+
+      <p>
+        <strong>一、METR 任务时长曲线延伸。</strong>
+        如果当前每 5–7 个月翻番的趋势保持，2026 年底前沿模型在 50% 成功率下能完成
+        约 20 小时的软件工程任务，即半个标准工作周。但更重要的指标是
+        <em>同等任务在更高成功率下（90%、99%）的时长</em>，目前尚未公开发布。
+        2026 年下半年 METR 是否更新该曲线，将是关键信号。
+      </p>
+
+      <p>
+        <strong>二、千兆瓦集群投产。</strong>
+        2026 上半年首批 GW 级训练集群上线（xAI Memphis 2、OpenAI/Microsoft Stargate I、
+        Anthropic-Amazon Rainier）。这一代集群训练的模型预计在 2026 末至 2027 初发布。
+        如果 scaling law 还有空间，这些会带来明显跃迁；如果撞墙，市场叙事会再次重写。
+      </p>
+
+      <p>
+        <strong>三、扩散语言模型 (Diffusion LLM) 的可能跃迁。</strong>
+        2025 年 Inception Labs 的 Mercury 与 Google 的 Gemini Diffusion (beta) 证明
+        非自回归生成在文本上可行。Diffusion 的并行解码 + 数据效率，
+        可能在 2026 年带来一次"非 Transformer"的硬件 / 算法刷新。
+        Carnegie Mellon 的 2025 年研究显示 diffusion LLM 在低数据 regime 下学习效率更高。
+        我个人预期 2026 年内至少一家主要实验室会发布一个生产级 diffusion-based LLM。
+      </p>
+
+      <p>
+        <strong>四、A2A 协议与多智能体生态。</strong>
+        类比 MCP 在 2024–2025 的轨迹，A2A（agent-to-agent）协议会在 2026 年内
+        看到第一波收敛 —— 可能由 AAIF（Agentic AI Foundation）主导，也可能因
+        OpenAI/Anthropic/Google 的不同利益而分裂。资深读者应该关注协议层的政治。
+      </p>
+
+      <p>
+        <strong>五、Computer Use 可靠性的工程突破。</strong>
+        当前 OSWorld 78% 远不够。一旦 GUI agent 突破 90%+，
+        所有"人工坐在屏幕前点击"的工作流（保险理赔、政府表单、ERP 输入、招聘筛选）
+        都会面临根本性自动化。这是 2026–2028 年最值得追踪的能力前沿。
+      </p>
+
+      <h3>三件可能反直觉的事</h3>
+
+      <p>
+        <strong>(1) 上下文窗口不会再大幅扩展。</strong>
+        Transformer 架构的注意力限制让 1M+ 上下文边际效用递减 ——
+        2025 年 LLaMA 4 Scout 推出的 10M 上下文在实际任务中表现不如预期；
+        Anthropic 一直保守在 200K-1M 区间。预测 2026 年默认上下文不会大幅突破 1M，
+        而是<em>更好的"长上下文质量"</em>（不是数量）。
+      </p>
+
+      <p>
+        <strong>(2) 推理模型与对话模型会重新合并。</strong>
+        GPT-5 已经做了"统一路由"——按问题复杂度自动选择推理深度。这会成为标准。
+        "thinking budget"会从用户可见参数变成厂商内部优化变量，
+        类似 CPU 的 turbo boost。<em>"是否使用推理模型"在 2026 末可能完全消失为问题</em>。
+      </p>
+
+      <p>
+        <strong>(3) "数据墙"被高估，工具调用与合成数据被低估。</strong>
+        "互联网文本快被用完"的叙事在 2023–2024 流行，但 2025 年的实际发展显示：
+        合成数据（self-play、强化学习生成的思考链）、工具调用产生的中间数据、
+        多模态数据（视频中的物理常识）三个来源都没耗尽。
+        2026–2027 年的瓶颈更可能是<em>评估</em>（如何知道一个模型真的更好）
+        而非<em>数据</em>（用什么训练）。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ 结尾 ═══════════════════════════ -->
+<section>
+  <div class="narrow">
+    <div class="prose">
+      <div class="section-num">收束 · Coda</div>
+      <h2 class="section-title">回到原点<span class="sub">a closing observation</span></h2>
+
+      <p>
+        三年半前那个 11 月的下午，ChatGPT 上线时几乎所有人 —— 包括 OpenAI 自己 ——
+        都没预料到接下来会发生什么。Sam Altman 公开发文说 "Twitter for a few hours"，
+        预计周末就能歇下来。结果他错了 1260 天。
+      </p>
+
+      <p>
+        作为资深从业者，我们应该从中学到的不是"AI 进展不可预测"——
+        这种说法太懒散。<em>真正的教训是：当一项技术同时具备
+        (a) 强大的内在 scaling 曲线、(b) 与人类语言这种通用接口的紧密耦合、
+        (c) 工程化壁垒低到任何开发者都能上手实验，
+        它的传播速度会显著超过基于历史类比的预测</em>。
+        ChatGPT 不是计算机历史上最强的产品，但它击中了上述三个条件的交集。
+      </p>
+
+      <p>
+        2026 年的状态是：奇点时刻的<em>原始震撼</em>已经消散，但<em>结构性变化</em>
+        才刚刚开始钉入现实。编码工作流被根本重塑；客服、法律、医疗等行业进入
+        渐进式自动化曲线；新的工程职业（agent 设计师、prompt 系统工程师、
+        可解释性研究员）开始有正式头衔；MCP 这样的标准协议在悄悄重新分配
+        软件行业的"接口权"。这些变化没有 ChatGPT 那种 viral moment，
+        但每一个都比那个 viral moment 更重要。
+      </p>
+
+      <p>
+        对资深读者，我对下一阶段的建议简短：<strong>少看模型发布会，多读 METR、Anthropic
+        Responsible Scaling、Anthropic 可解释性、以及独立基准的方法学论文</strong>；
+        <strong>把工程精力投入到评估（eval）而非框架</strong>；
+        <strong>对"agent 在你公司能不能用"持谨慎乐观 —— 上限远比想象高，
+        但失败模式同样远比想象奇特</strong>。
+        最后，1260 天后再写一份这种回顾时，
+        我们大概率会发现 2026 年的判断中有三分之一是错的 ——
+        但当下能做的，是把当前能看到的东西用最高密度写下来，
+        让未来的修订有起点。
+      </p>
+
+      <div class="endmark">— 完 —</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ 主要数据来源 ═══════════════════════════ -->
+<footer>
+  <div class="narrow">
+    <h4>主要数据来源 · Principal Sources</h4>
+    <ol class="refs">
+      <li>Menlo Ventures. <em>2025: The State of Generative AI in the Enterprise.</em> December 2025. 调研约 500 位美国企业决策者。</li>
+      <li>McKinsey &amp; Company. <em>The state of AI in 2025: Agents, innovation, and transformation.</em> November 2025.</li>
+      <li>Anthropic. <em>Claude 4 / 4.5 / 4.6 / 4.7 release notes &amp; system cards.</em> 2025–2026.</li>
+      <li>OpenAI. <em>GPT-5 / o-series technical announcements.</em> 2024–2025.</li>
+      <li>DeepSeek-AI et al. <em>DeepSeek-R1 incentivizes reasoning in LLMs through reinforcement learning.</em> Nature, September 2025.</li>
+      <li>Model Evaluation &amp; Threat Research (METR). <em>Task-length doubling curve.</em> Updated November 2025.</li>
+      <li>Model Context Protocol. <em>One Year of MCP, November 2025 Spec Release.</em></li>
+      <li>arXiv 2604.05969. <em>A Formal Security Framework for MCP-Based AI Agents.</em> 2026.</li>
+      <li>Simon Willison. <em>2025: The year in LLMs.</em> December 31, 2025.</li>
+      <li>OECD. <em>AI adoption by small and medium-sized enterprises.</em> December 2025.</li>
+      <li>IntuitionLabs. <em>Anthropic Claude 4: Evolution of a Large Language Model.</em> January 2026.</li>
+      <li>SWE-bench / Princeton NLP. <em>Verified leaderboard.</em> Continuous, accessed May 2026.</li>
+      <li>arXiv 2503.22732. <em>Reasoning Beyond Limits: Advances and Open Problems for LLMs.</em> March 2025.</li>
+      <li>Fortune Business Insights. <em>Generative AI Market Report 2025–2034.</em></li>
+      <li>Tembo, Morphllm, Requesty 等独立编码 agent 基准与采纳报告，2025 Q4 – 2026 Q1.</li>
+    </ol>
+
+    <p class="colophon" style="margin-top:40px;">
+      <strong>编辑说明 · Colophon.</strong> 本文写作时间为 2026 年 5 月初。所有市场数据均经过多源交叉核对；
+      技术叙述偏向资深从业者视角，主动跳过定义性内容。文中观点为作者独立判断，不代表任何机构立场。
+      引用百分点 / 美元数字时已标注主要来源，但请读者注意：在快速变化的领域，
+      任何六个月以上的统计都应视为"指示性"而非"准确"。
+      字体：Fraunces, Noto Serif SC, Inter, JetBrains Mono。
+      色板：朱印红 #a8311e、墨黑 #1a1612、宣纸米 #f4ede2。
+    </p>
+
+  </div>
+</footer>
+
+</body>
+</html>
