@@ -1,0 +1,1426 @@
+---
+layout: null
+title: "DeepSeek-V3 深度解析报告"
+date: 2026-05-13 12:30:00
+excerpt: "671B 总参数、37B 激活参数的开源 MoE 模型，用 557 万美元训出来——从架构、训练、推理、性能四个维度拆解 DeepSeek-V3。"
+---
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeepSeek-V3 深度解析报告</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;900&family=Noto+Sans+SC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0e14;
+    --bg-soft: #15161f;
+    --panel: #1a1c28;
+    --panel-light: #20232f;
+    --border: #2a2d3d;
+    --text: #e8e9f1;
+    --text-dim: #9da0b3;
+    --text-mute: #6a6e82;
+    --accent: #4dd6c8;       /* mint cyan */
+    --accent-warm: #ffb454;  /* amber */
+    --accent-hot: #ff6b6b;   /* coral */
+    --accent-ink: #7c83ff;   /* indigo */
+    --green: #7fdb9f;
+    --grid: rgba(77, 214, 200, 0.06);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    font-weight: 300;
+    line-height: 1.75;
+    font-size: 16px;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: -1px -1px;
+  }
+  .container {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  /* ============ HERO ============ */
+  .hero {
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -200px; right: -200px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(77, 214, 200, 0.12), transparent 70%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -150px; left: -100px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(124, 131, 255, 0.08), transparent 70%);
+    pointer-events: none;
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .eyebrow::before {
+    content: '';
+    width: 28px; height: 1px;
+    background: var(--accent);
+  }
+  h1 {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 900;
+    font-size: clamp(40px, 6vw, 72px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 28px;
+  }
+  h1 .gradient {
+    background: linear-gradient(120deg, var(--accent) 0%, var(--accent-ink) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-style: italic;
+  }
+  .subtitle {
+    font-size: 19px;
+    color: var(--text-dim);
+    max-width: 640px;
+    margin-bottom: 48px;
+    line-height: 1.7;
+  }
+  .subtitle strong { color: var(--text); font-weight: 500; }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 40px;
+  }
+  @media (max-width: 720px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    padding: 24px 20px;
+    background: var(--bg);
+  }
+  .stat-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .stat-num .unit { font-size: 14px; color: var(--text-dim); margin-left: 4px; }
+  .stat-label {
+    font-size: 12px;
+    color: var(--text-mute);
+    letter-spacing: 0.05em;
+  }
+
+  /* ============ TOC ============ */
+  .toc {
+    padding: 50px 0 30px;
+    border-bottom: 1px solid var(--border);
+  }
+  .toc-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--text-mute);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .toc-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px 32px;
+    list-style: none;
+  }
+  @media (max-width: 720px) { .toc-list { grid-template-columns: 1fr; } }
+  .toc-list a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 15px;
+    padding: 6px 0;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .toc-list a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+  .toc-list .num {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-mute);
+    font-size: 12px;
+    min-width: 24px;
+  }
+
+  /* ============ SECTIONS ============ */
+  section {
+    padding: 70px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .sec-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    margin-bottom: 18px;
+  }
+  h2 {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 600;
+    font-size: 38px;
+    line-height: 1.2;
+    margin-bottom: 16px;
+    letter-spacing: -0.01em;
+  }
+  .sec-lead {
+    font-size: 18px;
+    color: var(--text-dim);
+    margin-bottom: 40px;
+    max-width: 720px;
+    line-height: 1.7;
+  }
+  h3 {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 600;
+    font-size: 24px;
+    margin: 50px 0 16px;
+    color: var(--text);
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+  }
+  h3 .marker {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 400;
+  }
+  h4 {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    margin: 28px 0 12px;
+    color: var(--text);
+  }
+  p { margin-bottom: 18px; color: var(--text-dim); }
+  p strong { color: var(--text); font-weight: 500; }
+  p em { color: var(--accent); font-style: normal; font-weight: 500; }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85em;
+    background: var(--panel-light);
+    padding: 2px 7px;
+    border-radius: 3px;
+    color: var(--accent);
+  }
+
+  /* ============ ANALOGY BOX ============ */
+  .analogy {
+    background: linear-gradient(135deg, rgba(255, 180, 84, 0.06), rgba(255, 180, 84, 0.02));
+    border-left: 3px solid var(--accent-warm);
+    padding: 22px 26px;
+    margin: 24px 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .analogy-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent-warm);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .analogy p { color: var(--text); margin-bottom: 0; font-size: 15px; }
+  .analogy p + p { margin-top: 12px; }
+
+  /* ============ KEY FACT BOX ============ */
+  .keyfact {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 24px 28px;
+    margin: 28px 0;
+    border-radius: 4px;
+    position: relative;
+  }
+  .keyfact::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--accent);
+  }
+  .keyfact .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .keyfact p { margin: 0; color: var(--text); }
+
+  /* ============ FIGURE / DIAGRAM ============ */
+  figure {
+    margin: 36px 0;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 28px;
+  }
+  figure svg { width: 100%; height: auto; display: block; }
+  figcaption {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-mute);
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+  figcaption .fig-num { color: var(--accent); margin-right: 8px; }
+
+  /* ============ TABLE ============ */
+  .table-wrap { overflow-x: auto; margin: 28px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  th, td {
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-mute);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 500;
+    background: var(--bg-soft);
+  }
+  td { color: var(--text-dim); }
+  td.num { font-family: 'JetBrains Mono', monospace; color: var(--text); text-align: right; }
+  td.highlight { color: var(--accent); font-weight: 500; }
+  tr:hover td { background: var(--panel); }
+
+  /* ============ COMPARISON CARDS ============ */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 28px 0;
+  }
+  @media (max-width: 720px) { .compare { grid-template-columns: 1fr; } }
+  .compare-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 22px;
+    border-radius: 4px;
+  }
+  .compare-card .head {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .compare-card.bad .head { color: var(--accent-hot); }
+  .compare-card.good .head { color: var(--green); }
+  .compare-card p { font-size: 14px; margin-bottom: 8px; color: var(--text-dim); }
+
+  /* ============ BENCH BARS ============ */
+  .bench-block { margin: 28px 0; }
+  .bench-row {
+    display: grid;
+    grid-template-columns: 200px 1fr 70px;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 0;
+    font-size: 14px;
+  }
+  @media (max-width: 600px) { .bench-row { grid-template-columns: 130px 1fr 60px; gap: 10px; font-size: 12px; } }
+  .bench-row .label { color: var(--text-dim); }
+  .bench-row.dsv3 .label { color: var(--accent); font-weight: 500; }
+  .bench-bar {
+    height: 18px;
+    background: var(--panel);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bench-bar .fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-ink), var(--text-mute));
+    border-radius: 2px;
+    transition: width 0.6s;
+  }
+  .bench-row.dsv3 .bench-bar .fill {
+    background: linear-gradient(90deg, var(--accent), var(--green));
+  }
+  .bench-row.gpt4 .bench-bar .fill { background: linear-gradient(90deg, var(--accent-warm), #ff8c5a); }
+  .bench-row.claude .bench-bar .fill { background: linear-gradient(90deg, var(--accent-hot), #ffa07a); }
+  .bench-val {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text);
+    font-size: 13px;
+    text-align: right;
+  }
+  .bench-row.dsv3 .bench-val { color: var(--accent); font-weight: 700; }
+  .bench-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-mute);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin: 32px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ============ FOOTER ============ */
+  footer {
+    padding: 60px 0 80px;
+    text-align: center;
+    color: var(--text-mute);
+    font-size: 13px;
+  }
+  footer .sig {
+    font-family: 'Noto Serif SC', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  /* ============ INLINE TAG ============ */
+  .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 2px 8px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+    margin: 0 2px;
+  }
+  .tag.accent { color: var(--accent); border-color: var(--accent); }
+
+  ul.bullet { list-style: none; padding: 0; margin: 18px 0; }
+  ul.bullet li {
+    padding: 6px 0 6px 22px;
+    color: var(--text-dim);
+    position: relative;
+  }
+  ul.bullet li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  ul.bullet li strong { color: var(--text); font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="eyebrow">技术深度解析 · DEC 2024</div>
+  <h1>DeepSeek-V3<br><span class="gradient">把大模型的成本</span><br>砍下一个数量级</h1>
+  <p class="subtitle">
+    一个 <strong>671B</strong> 总参数、<strong>37B</strong> 激活参数的开源 MoE 模型，
+    用 <strong>557 万美元</strong>训出来，性能对标 GPT-4o 与 Claude 3.5 Sonnet。
+    本报告从架构、训练、推理、性能四个维度，把它讲清楚。
+  </p>
+
+  <div class="stat-grid">
+    <div class="stat">
+      <div class="stat-num">671<span class="unit">B</span></div>
+      <div class="stat-label">总参数量</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">37<span class="unit">B</span></div>
+      <div class="stat-label">每 Token 激活</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">14.8<span class="unit">T</span></div>
+      <div class="stat-label">预训练 Token</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">$5.58<span class="unit">M</span></div>
+      <div class="stat-label">训练总成本</div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ TOC ============ -->
+<nav class="toc">
+  <div class="toc-title">目录 / Contents</div>
+  <ul class="toc-list">
+    <li><a href="#sec1"><span class="num">01</span>它到底是什么</a></li>
+    <li><a href="#sec2"><span class="num">02</span>核心架构拆解</a></li>
+    <li><a href="#sec3"><span class="num">03</span>训练体系</a></li>
+    <li><a href="#sec4"><span class="num">04</span>推理与部署</a></li>
+    <li><a href="#sec5"><span class="num">05</span>性能指标</a></li>
+    <li><a href="#sec6"><span class="num">06</span>后续演进与意义</a></li>
+  </ul>
+</nav>
+
+<!-- ============ SECTION 1 ============ -->
+<section id="sec1">
+  <div class="sec-num">— SECTION 01 —</div>
+  <h2>它到底是什么</h2>
+  <p class="sec-lead">
+    一句话：DeepSeek-V3 是一个"<em>看起来很大、用起来很小</em>"的语言模型。它把开源大模型与闭源顶级模型之间的差距，
+    第一次从"望尘莫及"压缩到了"擦肩而过"。
+  </p>
+
+  <h3><span class="marker">01 / A</span>大但不全开</h3>
+  <p>
+    DeepSeek-V3 总参数量高达 <strong>671 B</strong>（6710 亿），听起来非常吓人——比 Llama 3.1 的 405B 还大不少。
+    但它用的是 <strong>MoE（Mixture of Experts，混合专家）</strong>架构：每次推理只激活 <strong>37B</strong> 参数，
+    其余部分"在岗待命"，并不参与计算。
+  </p>
+
+  <div class="analogy">
+    <span class="analogy-tag">打个比方</span>
+    <p>
+      想象一家拥有 256 位专科医生 + 1 位全科医生的"超级医院"。
+      你来挂号，分诊台只会从中挑出最对症的 8 位医生 + 那 1 位全科医生组成会诊小组。
+      其他 248 位医生不上班、不收费、不占算力——但他们必须存在，因为下一个病人可能会用到。
+    </p>
+    <p>
+      <strong>671B 是医院总人数，37B 是每次会诊的医生总参数。</strong>
+      这就是 MoE 的精髓：用"<em>稀疏激活</em>"换"<em>密集知识</em>"。
+    </p>
+  </div>
+
+  <h3><span class="marker">01 / B</span>关键身份信息</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>项目</th><th>数值</th><th>说明</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>架构类型</td><td class="highlight">Decoder-only Transformer + MoE</td><td>61 层</td></tr>
+        <tr><td>隐藏维度</td><td class="num">7168</td><td>每层主干宽度</td></tr>
+        <tr><td>总参数</td><td class="num">671 B</td><td>包含所有专家</td></tr>
+        <tr><td>激活参数</td><td class="num">37 B</td><td>每个 token 实际计算量</td></tr>
+        <tr><td>路由专家</td><td class="num">256 个</td><td>每个 MoE 层</td></tr>
+        <tr><td>共享专家</td><td class="num">1 个</td><td>每个 MoE 层，所有 token 必经</td></tr>
+        <tr><td>每 Token 激活专家</td><td class="num">8 + 1</td><td>top-8 路由 + 1 共享</td></tr>
+        <tr><td>注意力机制</td><td class="highlight">MLA</td><td>多头潜在注意力</td></tr>
+        <tr><td>上下文窗口</td><td class="num">128 K</td><td>分两阶段扩展</td></tr>
+        <tr><td>训练数据</td><td class="num">14.8 T tokens</td><td>多语种、高质量</td></tr>
+        <tr><td>训练精度</td><td class="highlight">FP8 混合精度</td><td>业界首个超大规模 FP8 训练</td></tr>
+        <tr><td>许可证</td><td>开源（含权重）</td><td>商用友好</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3><span class="marker">01 / C</span>它解决了什么问题</h3>
+  <p>
+    在 DeepSeek-V3 出现之前，"训练一个对标 GPT-4 的模型"几乎等同于"得有数十亿美元、上万张 H100、几个月的国家级资源"。
+    DeepSeek 用 <strong>2048 张 H800</strong>（H100 的中国特供阉割版，互联带宽只有一半）、
+    不到 <strong>2 个月</strong>、约 <strong>557 万美元</strong>就把这件事做完了。
+  </p>
+  <div class="keyfact">
+    <div class="label">本质突破</div>
+    <p>
+      不是堆算力，而是<strong>从算法、并行框架、硬件三层联合优化</strong>，
+      把"训一个超大 MoE"这件事的工程成本砍下了一个数量级。
+      这也是为什么它发布后，整个行业（包括 Meta、OpenAI 内部）都被震动到了。
+    </p>
+  </div>
+</section>
+
+<!-- ============ SECTION 2: ARCHITECTURE ============ -->
+<section id="sec2">
+  <div class="sec-num">— SECTION 02 —</div>
+  <h2>核心架构拆解</h2>
+  <p class="sec-lead">
+    DeepSeek-V3 不是一拍脑袋的发明，而是 <strong>四个独立创新的精确组合</strong>：
+    MLA 解决推理显存问题，DeepSeekMoE 解决稀疏激活问题，
+    无辅助损失负载均衡解决 MoE 崩溃问题，MTP 解决训练信号稀疏问题。
+  </p>
+
+  <!-- ===== Overall Architecture Diagram ===== -->
+  <figure>
+    <svg viewBox="0 0 800 460" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+      <defs>
+        <linearGradient id="moeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#4dd6c8" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="#4dd6c8" stop-opacity="0.05"/>
+        </linearGradient>
+        <linearGradient id="mlaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#7c83ff" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="#7c83ff" stop-opacity="0.05"/>
+        </linearGradient>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#4dd6c8"/>
+        </marker>
+      </defs>
+
+      <!-- Input -->
+      <rect x="320" y="20" width="160" height="36" rx="4" fill="#1a1c28" stroke="#4dd6c8" stroke-width="1"/>
+      <text x="400" y="42" fill="#e8e9f1" font-size="13" text-anchor="middle">Input Tokens</text>
+
+      <!-- Embedding -->
+      <rect x="320" y="70" width="160" height="32" rx="3" fill="#15161f" stroke="#2a2d3d"/>
+      <text x="400" y="90" fill="#9da0b3" font-size="12" text-anchor="middle">Token Embedding (7168-d)</text>
+
+      <line x1="400" y1="56" x2="400" y2="68" stroke="#4dd6c8" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <!-- Dense layers (first 3) -->
+      <g>
+        <rect x="280" y="115" width="240" height="50" rx="4" fill="#1a1c28" stroke="#2a2d3d" stroke-dasharray="3,3"/>
+        <text x="400" y="135" fill="#e8e9f1" font-size="12" text-anchor="middle">Layer 1-3 (Dense FFN)</text>
+        <text x="400" y="152" fill="#6a6e82" font-size="10" text-anchor="middle">MLA + standard FFN</text>
+      </g>
+
+      <line x1="400" y1="105" x2="400" y2="113" stroke="#4dd6c8" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <!-- MoE Block representation -->
+      <g>
+        <rect x="100" y="195" width="600" height="180" rx="6" fill="url(#moeGrad)" stroke="#4dd6c8" stroke-width="1"/>
+        <text x="400" y="218" fill="#4dd6c8" font-size="13" text-anchor="middle" font-weight="700">Layer 4-61 (MoE Block) × 58</text>
+
+        <!-- MLA -->
+        <rect x="130" y="235" width="180" height="60" rx="4" fill="url(#mlaGrad)" stroke="#7c83ff"/>
+        <text x="220" y="258" fill="#e8e9f1" font-size="13" text-anchor="middle" font-weight="700">MLA</text>
+        <text x="220" y="276" fill="#9da0b3" font-size="10" text-anchor="middle">Multi-head Latent Attention</text>
+        <text x="220" y="289" fill="#7c83ff" font-size="10" text-anchor="middle">压缩 KV Cache</text>
+
+        <!-- MoE FFN -->
+        <rect x="490" y="235" width="180" height="60" rx="4" fill="url(#moeGrad)" stroke="#4dd6c8"/>
+        <text x="580" y="258" fill="#e8e9f1" font-size="13" text-anchor="middle" font-weight="700">DeepSeekMoE</text>
+        <text x="580" y="276" fill="#9da0b3" font-size="10" text-anchor="middle">256 路由 + 1 共享</text>
+        <text x="580" y="289" fill="#4dd6c8" font-size="10" text-anchor="middle">每 token 选 8 个</text>
+
+        <line x1="310" y1="265" x2="488" y2="265" stroke="#4dd6c8" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Detail labels -->
+        <text x="400" y="325" fill="#6a6e82" font-size="11" text-anchor="middle">Router Bias-only Update（无辅助损失负载均衡）</text>
+        <text x="400" y="345" fill="#6a6e82" font-size="11" text-anchor="middle">RMSNorm · Residual · SwiGLU · RoPE</text>
+      </g>
+
+      <line x1="400" y1="167" x2="400" y2="193" stroke="#4dd6c8" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <!-- MTP -->
+      <g>
+        <rect x="220" y="395" width="160" height="50" rx="4" fill="#1a1c28" stroke="#ffb454"/>
+        <text x="300" y="416" fill="#ffb454" font-size="12" text-anchor="middle" font-weight="700">Main Head</text>
+        <text x="300" y="432" fill="#9da0b3" font-size="10" text-anchor="middle">predict t+1</text>
+
+        <rect x="420" y="395" width="160" height="50" rx="4" fill="#1a1c28" stroke="#ffb454" stroke-dasharray="3,3"/>
+        <text x="500" y="416" fill="#ffb454" font-size="12" text-anchor="middle" font-weight="700">MTP Head</text>
+        <text x="500" y="432" fill="#9da0b3" font-size="10" text-anchor="middle">predict t+2 (训练时)</text>
+      </g>
+
+      <line x1="350" y1="377" x2="300" y2="393" stroke="#4dd6c8" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="450" y1="377" x2="500" y2="393" stroke="#4dd6c8" stroke-width="1.5" marker-end="url(#arr)"/>
+    </svg>
+    <figcaption><span class="fig-num">FIG 01</span>DeepSeek-V3 整体结构概览：61 层 Transformer，前 3 层是 Dense FFN，后 58 层全部是 MoE</figcaption>
+  </figure>
+
+  <!-- ============ MLA ============ -->
+  <h3><span class="marker">02 / A</span>MLA：让推理显存不再爆炸</h3>
+  <p>
+    传统 Transformer 在做推理（生成）时，每生成一个 token 都要保存所有历史 token 的
+    <strong>Key 和 Value 向量</strong>，这就是大名鼎鼎的 KV Cache。
+    上下文越长，KV Cache 就越大——10 万 token 的对话能轻松吃掉几十 GB 显存，比模型本身还重。
+  </p>
+
+  <p>
+    <strong>MLA（Multi-head Latent Attention，多头潜在注意力）</strong>的解法很巧妙：
+    它不直接存 K 和 V，而是先把它们<em>联合压缩</em>成一个低维的"潜在向量"<code>c_KV</code>，存这个就够了。
+    用的时候再投影回原来的高维空间。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+      <!-- LEFT: standard MHA -->
+      <g>
+        <text x="180" y="30" fill="#ff6b6b" font-size="13" text-anchor="middle" font-weight="700">传统 MHA / GQA</text>
+        <text x="180" y="48" fill="#6a6e82" font-size="11" text-anchor="middle">每 token 存全部 K/V 向量</text>
+
+        <!-- Token cache rows -->
+        <g>
+          <rect x="50" y="70" width="60" height="22" fill="#15161f" stroke="#2a2d3d"/>
+          <text x="80" y="86" fill="#9da0b3" font-size="11" text-anchor="middle">tok 1</text>
+          <rect x="115" y="70" width="80" height="22" fill="#ff6b6b" fill-opacity="0.2" stroke="#ff6b6b"/>
+          <text x="155" y="86" fill="#e8e9f1" font-size="10" text-anchor="middle">K (大)</text>
+          <rect x="200" y="70" width="80" height="22" fill="#ff6b6b" fill-opacity="0.2" stroke="#ff6b6b"/>
+          <text x="240" y="86" fill="#e8e9f1" font-size="10" text-anchor="middle">V (大)</text>
+        </g>
+        <g>
+          <rect x="50" y="100" width="60" height="22" fill="#15161f" stroke="#2a2d3d"/>
+          <text x="80" y="116" fill="#9da0b3" font-size="11" text-anchor="middle">tok 2</text>
+          <rect x="115" y="100" width="80" height="22" fill="#ff6b6b" fill-opacity="0.2" stroke="#ff6b6b"/>
+          <text x="155" y="116" fill="#e8e9f1" font-size="10" text-anchor="middle">K (大)</text>
+          <rect x="200" y="100" width="80" height="22" fill="#ff6b6b" fill-opacity="0.2" stroke="#ff6b6b"/>
+          <text x="240" y="116" fill="#e8e9f1" font-size="10" text-anchor="middle">V (大)</text>
+        </g>
+        <text x="180" y="148" fill="#6a6e82" font-size="14" text-anchor="middle">⋮</text>
+        <g>
+          <rect x="50" y="160" width="60" height="22" fill="#15161f" stroke="#2a2d3d"/>
+          <text x="80" y="176" fill="#9da0b3" font-size="11" text-anchor="middle">tok N</text>
+          <rect x="115" y="160" width="80" height="22" fill="#ff6b6b" fill-opacity="0.2" stroke="#ff6b6b"/>
+          <text x="155" y="176" fill="#e8e9f1" font-size="10" text-anchor="middle">K (大)</text>
+          <rect x="200" y="160" width="80" height="22" fill="#ff6b6b" fill-opacity="0.2" stroke="#ff6b6b"/>
+          <text x="240" y="176" fill="#e8e9f1" font-size="10" text-anchor="middle">V (大)</text>
+        </g>
+
+        <rect x="50" y="220" width="230" height="60" rx="4" fill="#ff6b6b" fill-opacity="0.08" stroke="#ff6b6b" stroke-dasharray="4,4"/>
+        <text x="165" y="245" fill="#ff6b6b" font-size="13" text-anchor="middle" font-weight="700">显存占用：高</text>
+        <text x="165" y="265" fill="#9da0b3" font-size="11" text-anchor="middle">≈ N × 2 × d_model 量级</text>
+      </g>
+
+      <!-- Divider -->
+      <line x1="395" y1="20" x2="395" y2="290" stroke="#2a2d3d" stroke-dasharray="3,3"/>
+
+      <!-- RIGHT: MLA -->
+      <g>
+        <text x="600" y="30" fill="#4dd6c8" font-size="13" text-anchor="middle" font-weight="700">MLA (DeepSeek-V3)</text>
+        <text x="600" y="48" fill="#6a6e82" font-size="11" text-anchor="middle">只存压缩后的潜在向量 c_KV</text>
+
+        <g>
+          <rect x="450" y="70" width="60" height="22" fill="#15161f" stroke="#2a2d3d"/>
+          <text x="480" y="86" fill="#9da0b3" font-size="11" text-anchor="middle">tok 1</text>
+          <rect x="515" y="70" width="50" height="22" fill="#4dd6c8" fill-opacity="0.25" stroke="#4dd6c8"/>
+          <text x="540" y="86" fill="#e8e9f1" font-size="10" text-anchor="middle">c_KV</text>
+        </g>
+        <g>
+          <rect x="450" y="100" width="60" height="22" fill="#15161f" stroke="#2a2d3d"/>
+          <text x="480" y="116" fill="#9da0b3" font-size="11" text-anchor="middle">tok 2</text>
+          <rect x="515" y="100" width="50" height="22" fill="#4dd6c8" fill-opacity="0.25" stroke="#4dd6c8"/>
+          <text x="540" y="116" fill="#e8e9f1" font-size="10" text-anchor="middle">c_KV</text>
+        </g>
+        <text x="510" y="148" fill="#6a6e82" font-size="14" text-anchor="middle">⋮</text>
+        <g>
+          <rect x="450" y="160" width="60" height="22" fill="#15161f" stroke="#2a2d3d"/>
+          <text x="480" y="176" fill="#9da0b3" font-size="11" text-anchor="middle">tok N</text>
+          <rect x="515" y="160" width="50" height="22" fill="#4dd6c8" fill-opacity="0.25" stroke="#4dd6c8"/>
+          <text x="540" y="176" fill="#e8e9f1" font-size="10" text-anchor="middle">c_KV</text>
+        </g>
+
+        <!-- Decompression illustration -->
+        <g>
+          <text x="640" y="115" fill="#7c83ff" font-size="11">→ 用时解压</text>
+          <rect x="620" y="125" width="55" height="20" fill="#7c83ff" fill-opacity="0.15" stroke="#7c83ff"/>
+          <text x="647" y="139" fill="#e8e9f1" font-size="10" text-anchor="middle">K full</text>
+          <rect x="685" y="125" width="55" height="20" fill="#7c83ff" fill-opacity="0.15" stroke="#7c83ff"/>
+          <text x="712" y="139" fill="#e8e9f1" font-size="10" text-anchor="middle">V full</text>
+        </g>
+
+        <rect x="450" y="220" width="290" height="60" rx="4" fill="#4dd6c8" fill-opacity="0.08" stroke="#4dd6c8" stroke-dasharray="4,4"/>
+        <text x="595" y="245" fill="#4dd6c8" font-size="13" text-anchor="middle" font-weight="700">显存占用：低（约 1/14 ~ 1/10）</text>
+        <text x="595" y="265" fill="#9da0b3" font-size="11" text-anchor="middle">长上下文推理变得可行</text>
+      </g>
+
+      <!-- Center label -->
+      <text x="400" y="305" fill="#6a6e82" font-size="11" text-anchor="middle">同样推理质量下，KV Cache 大幅缩小</text>
+    </svg>
+    <figcaption><span class="fig-num">FIG 02</span>MLA 与传统多头注意力的 KV Cache 对比：用"低秩压缩"换显存</figcaption>
+  </figure>
+
+  <div class="analogy">
+    <span class="analogy-tag">打个比方</span>
+    <p>
+      传统 KV Cache 像是把每张照片都用 4K 原图存下来，磁盘很快爆掉。
+      MLA 是先把每张照片<em>压成缩略图</em>存档，要看的时候临时放大——质量上几乎无损，但占的空间小一个数量级。
+    </p>
+  </div>
+
+  <p>
+    这个机制的<strong>实际收益</strong>非常具体：在同样的 GPU 上，DeepSeek-V3 能撑起 128K 的超长上下文，
+    服务更多并发用户，单 token 推理成本被大幅压低。这也是它能把 API 价格定到"白菜价"的硬件根基。
+  </p>
+
+  <!-- ============ DeepSeekMoE ============ -->
+  <h3><span class="marker">02 / B</span>DeepSeekMoE：细粒度专家 + 共享专家</h3>
+  <p>
+    传统 MoE（如 Mixtral）通常是"<em>少而粗</em>"的设计——8 个专家，每个都很大，每次激活 2 个。
+    DeepSeekMoE 反其道而行之：把每个专家切得更小、数量更多，叫做"<em>细粒度专家</em>"，
+    再单独留一个"<em>共享专家</em>"来处理所有 token 都用得上的通用知识。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 800 360" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+      <!-- Input token -->
+      <rect x="350" y="15" width="100" height="30" rx="3" fill="#1a1c28" stroke="#7c83ff"/>
+      <text x="400" y="35" fill="#e8e9f1" font-size="12" text-anchor="middle">Token 输入</text>
+
+      <!-- Router -->
+      <rect x="320" y="65" width="160" height="40" rx="3" fill="#1a1c28" stroke="#ffb454"/>
+      <text x="400" y="82" fill="#ffb454" font-size="12" text-anchor="middle" font-weight="700">Router (Sigmoid + Bias)</text>
+      <text x="400" y="98" fill="#9da0b3" font-size="10" text-anchor="middle">计算 token 与每个专家的亲和度</text>
+
+      <line x1="400" y1="46" x2="400" y2="63" stroke="#7c83ff" stroke-width="1.5"/>
+
+      <!-- Shared Expert -->
+      <rect x="60" y="135" width="140" height="50" rx="4" fill="#7c83ff" fill-opacity="0.15" stroke="#7c83ff"/>
+      <text x="130" y="155" fill="#e8e9f1" font-size="13" text-anchor="middle" font-weight="700">Shared Expert</text>
+      <text x="130" y="172" fill="#9da0b3" font-size="10" text-anchor="middle">所有 token 必经</text>
+
+      <line x1="320" y1="85" x2="200" y2="155" stroke="#7c83ff" stroke-width="1" stroke-dasharray="3,3"/>
+
+      <!-- 256 routed experts -->
+      <text x="500" y="125" fill="#9da0b3" font-size="11">256 个路由专家：</text>
+
+      <!-- Expert grid -->
+      <g id="experts">
+        <!-- row 1: top 8 selected (highlighted) -->
+        <g fill="#4dd6c8" fill-opacity="0.3" stroke="#4dd6c8">
+          <rect x="280" y="135" width="22" height="22"/>
+          <rect x="320" y="135" width="22" height="22"/>
+          <rect x="380" y="135" width="22" height="22"/>
+          <rect x="440" y="135" width="22" height="22"/>
+          <rect x="500" y="135" width="22" height="22"/>
+          <rect x="560" y="135" width="22" height="22"/>
+          <rect x="620" y="135" width="22" height="22"/>
+          <rect x="680" y="135" width="22" height="22"/>
+        </g>
+        <text x="400" y="150" fill="#0d0e14" font-size="9" text-anchor="middle" font-weight="700"></text>
+
+        <!-- inactive experts -->
+        <g fill="#1a1c28" stroke="#2a2d3d">
+          <!-- row 1 fillers -->
+          <rect x="304" y="135" width="14" height="22"/>
+          <rect x="344" y="135" width="34" height="22"/>
+          <rect x="404" y="135" width="34" height="22"/>
+          <rect x="464" y="135" width="34" height="22"/>
+          <rect x="524" y="135" width="34" height="22"/>
+          <rect x="584" y="135" width="34" height="22"/>
+          <rect x="644" y="135" width="34" height="22"/>
+          <rect x="704" y="135" width="34" height="22"/>
+          <!-- additional rows -->
+          <rect x="280" y="160" width="460" height="14"/>
+          <rect x="280" y="178" width="460" height="14"/>
+          <rect x="280" y="196" width="460" height="14"/>
+        </g>
+
+        <!-- Annotation arrow for selected -->
+        <text x="500" y="225" fill="#4dd6c8" font-size="11" text-anchor="middle">↑ Top-8 被激活的路由专家</text>
+        <text x="500" y="240" fill="#6a6e82" font-size="10" text-anchor="middle">其余 248 个本次不参与计算</text>
+      </g>
+
+      <line x1="450" y1="105" x2="500" y2="133" stroke="#ffb454" stroke-width="1" stroke-dasharray="3,3"/>
+
+      <!-- Output combine -->
+      <rect x="290" y="270" width="220" height="40" rx="4" fill="#1a1c28" stroke="#4dd6c8"/>
+      <text x="400" y="287" fill="#e8e9f1" font-size="12" text-anchor="middle" font-weight="700">加权融合输出</text>
+      <text x="400" y="303" fill="#9da0b3" font-size="10" text-anchor="middle">8 个路由专家 + 1 个共享专家</text>
+
+      <line x1="130" y1="186" x2="350" y2="268" stroke="#7c83ff" stroke-width="1"/>
+      <line x1="500" y1="216" x2="450" y2="268" stroke="#4dd6c8" stroke-width="1"/>
+
+      <text x="400" y="335" fill="#6a6e82" font-size="11" text-anchor="middle">总参数 671B · 实际激活仅 37B（约 5.5%）</text>
+    </svg>
+    <figcaption><span class="fig-num">FIG 03</span>DeepSeekMoE 路由结构：1 个共享专家学通用知识，256 个路由专家中 Top-8 被激活</figcaption>
+  </figure>
+
+  <h4>为什么"细+共享"这套设计有效？</h4>
+  <ul class="bullet">
+    <li><strong>细粒度专家</strong>：把专家切得更小，每个专家被迫学得更"专"，而不是变成 N 个相似的"通才"。组合空间也更大——256 选 8 比 8 选 2 的组合数高出几个数量级。</li>
+    <li><strong>共享专家</strong>：通用知识（语法、常识、句法骨架）由它统一承担，让其他专家可以心无旁骛地"特化"，比如有的专门处理代码缩进、有的专门处理中文成语。</li>
+    <li><strong>知识冗余降低</strong>：在传统 MoE 中，每个专家都得学一遍"如何说人话"。这里只学一次，参数效率更高。</li>
+  </ul>
+
+  <!-- ============ Aux-Loss-Free Balancing ============ -->
+  <h3><span class="marker">02 / C</span>无辅助损失的负载均衡：路由的"温柔调控"</h3>
+  <p>
+    MoE 有个臭名昭著的问题叫<strong>路由崩溃</strong>：训着训着，所有 token 都涌向少数几个"明星专家"，
+    其他专家闲着没活干，模型容量被严重浪费。
+  </p>
+  <p>
+    传统办法是加一个"<strong>辅助损失（auxiliary loss）</strong>"，强行惩罚不均衡。
+    但这是一种"硬约束"——模型为了让损失变小，会做出违背语义的选择，反而拖累性能。
+  </p>
+
+  <div class="compare">
+    <div class="compare-card bad">
+      <div class="head">× 传统辅助损失</div>
+      <p>给模型加一个"罚款":  你不均衡就扣分。</p>
+      <p>结果模型为了不被扣分，宁可把不该选的专家也选上。</p>
+      <p><strong>性能受损</strong>，路由质量下降。</p>
+    </div>
+    <div class="compare-card good">
+      <div class="head">✓ 无辅助损失</div>
+      <p>给每个专家配一个<strong>偏置项 b<sub>i</sub></strong>：路由打分时悄悄加上去。</p>
+      <p>专家忙不过来 → b<sub>i</sub> 自动调小（劝退新 token）；闲着 → b<sub>i</sub> 调大（招揽新 token）。</p>
+      <p><strong>不进入梯度</strong>，不影响主损失，性能与负载兼得。</p>
+    </div>
+  </div>
+
+  <div class="analogy">
+    <span class="analogy-tag">打个比方</span>
+    <p>
+      传统辅助损失就像餐厅老板规定"每个厨师每天必须做相同数量的菜"——结果厨师为了凑数，把不擅长的菜也接了。
+      DeepSeek-V3 的做法是<em>动态调价</em>：哪个厨师档口排队太长，就悄悄给那个档口加一点点"等候时间"，
+      新顾客自然分流。厨师不知道这个机制，只管做自己最拿手的菜。
+    </p>
+  </div>
+
+  <!-- ============ MTP ============ -->
+  <h3><span class="marker">02 / D</span>MTP：一次预测多个 Token</h3>
+  <p>
+    传统语言模型的训练目标是"<em>预测下一个 token</em>"，即 <code>p(x_{t+1} | x_{≤t})</code>。
+    DeepSeek-V3 引入了 <strong>MTP（Multi-Token Prediction）</strong>——在主输出头之外，
+    额外加上一个 MTP 模块，<strong>同时预测下下个 token</strong>。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 800 280" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+      <!-- Input sequence -->
+      <g>
+        <rect x="40" y="30" width="60" height="32" fill="#15161f" stroke="#2a2d3d"/>
+        <text x="70" y="50" fill="#9da0b3" font-size="11" text-anchor="middle">今天</text>
+        <rect x="105" y="30" width="60" height="32" fill="#15161f" stroke="#2a2d3d"/>
+        <text x="135" y="50" fill="#9da0b3" font-size="11" text-anchor="middle">天气</text>
+        <rect x="170" y="30" width="60" height="32" fill="#15161f" stroke="#2a2d3d"/>
+        <text x="200" y="50" fill="#9da0b3" font-size="11" text-anchor="middle">真</text>
+        <rect x="235" y="30" width="60" height="32" fill="#4dd6c8" fill-opacity="0.15" stroke="#4dd6c8"/>
+        <text x="265" y="50" fill="#4dd6c8" font-size="11" text-anchor="middle">[t]</text>
+      </g>
+
+      <text x="160" y="80" fill="#6a6e82" font-size="11" text-anchor="middle">输入序列（位置 t）</text>
+
+      <!-- Main backbone -->
+      <rect x="350" y="25" width="180" height="50" rx="4" fill="url(#mlaGrad)" stroke="#7c83ff"/>
+      <text x="440" y="48" fill="#e8e9f1" font-size="13" text-anchor="middle" font-weight="700">主干 Transformer</text>
+      <text x="440" y="65" fill="#9da0b3" font-size="10" text-anchor="middle">61 层 MLA + MoE</text>
+
+      <line x1="295" y1="46" x2="348" y2="46" stroke="#4dd6c8" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <!-- Main head: predict t+1 -->
+      <rect x="580" y="0" width="180" height="40" rx="4" fill="#1a1c28" stroke="#4dd6c8" stroke-width="2"/>
+      <text x="670" y="17" fill="#4dd6c8" font-size="12" text-anchor="middle" font-weight="700">Main Head</text>
+      <text x="670" y="32" fill="#e8e9f1" font-size="11" text-anchor="middle">→ 预测 t+1: "好"</text>
+
+      <!-- MTP head: predict t+2 -->
+      <rect x="580" y="55" width="180" height="40" rx="4" fill="#1a1c28" stroke="#ffb454" stroke-width="2" stroke-dasharray="4,4"/>
+      <text x="670" y="72" fill="#ffb454" font-size="12" text-anchor="middle" font-weight="700">MTP Module</text>
+      <text x="670" y="87" fill="#e8e9f1" font-size="11" text-anchor="middle">→ 预测 t+2: "啊"</text>
+
+      <line x1="530" y1="40" x2="578" y2="20" stroke="#4dd6c8" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="530" y1="60" x2="578" y2="75" stroke="#ffb454" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <!-- Loss combination -->
+      <g>
+        <rect x="240" y="135" width="320" height="50" rx="4" fill="#1a1c28" stroke="#2a2d3d"/>
+        <text x="400" y="155" fill="#e8e9f1" font-size="13" text-anchor="middle" font-weight="700">联合损失：L = L_main + λ × L_MTP</text>
+        <text x="400" y="172" fill="#9da0b3" font-size="10" text-anchor="middle">λ = 0.3（前 10T tokens）→ 0.1（后 4.8T tokens）</text>
+      </g>
+
+      <!-- Inference: speculative -->
+      <g>
+        <text x="400" y="215" fill="#ffb454" font-size="13" text-anchor="middle" font-weight="700">推理时：MTP 头变身"投机解码草稿"</text>
+        <text x="400" y="235" fill="#9da0b3" font-size="11" text-anchor="middle">主头 + MTP 头一起出 2 个候选 token，验证通过则一次发 2 个</text>
+        <text x="400" y="255" fill="#4dd6c8" font-size="12" text-anchor="middle">→ 第 2 个 token 接受率 85%~90%，吞吐提升约 1.8×</text>
+      </g>
+    </svg>
+    <figcaption><span class="fig-num">FIG 04</span>MTP（多 Token 预测）的训练 / 推理机制：训练时增强信号密度，推理时变身"投机解码"</figcaption>
+  </figure>
+
+  <p>这个设计有<strong>两个意外之喜</strong>：</p>
+  <ul class="bullet">
+    <li><strong>训练信号更密</strong>：每个 token 提供 2 份梯度信号，相当于免费翻倍了"教学密度"，模型学得更快、更稳。</li>
+    <li><strong>推理免费加速</strong>：MTP 头在推理时可以直接当"投机解码（speculative decoding）"的草稿生成器。如果主模型验证通过 MTP 给出的 t+2 候选，就一次性输出 2 个 token——实测<em>解码速度提升约 1.8 倍</em>。</li>
+  </ul>
+
+  <div class="keyfact">
+    <div class="label">设计哲学</div>
+    <p>
+      DeepSeek-V3 的四大架构创新——MLA、DeepSeekMoE、无辅助损失负载均衡、MTP——
+      不是为了发论文堆 trick，而是<strong>每一个都瞄准了"训练或推理的成本瓶颈"</strong>。
+      MLA 砍推理显存，MoE 砍激活量，无辅助损失保护质量，MTP 一举两得（训练加速+推理加速）。
+      这种"<em>为成本而设计</em>"的思路，是它能突破工程极限的根本原因。
+    </p>
+  </div>
+</section>
+
+<!-- ============ SECTION 3: TRAINING ============ -->
+<section id="sec3">
+  <div class="sec-num">— SECTION 03 —</div>
+  <h2>训练体系</h2>
+  <p class="sec-lead">
+    架构再聪明，训不出来也是空中楼阁。DeepSeek-V3 的另一半故事是
+    <strong>用 2048 张被阉割互联带宽的 H800，把万亿参数 MoE 训稳了</strong>——
+    靠的是 FP8 精度、自研并行框架、和对硬件的极致榨取。
+  </p>
+
+  <h3><span class="marker">03 / A</span>训练账本：14.8T tokens × 2.788M GPU 小时</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>阶段</th><th>GPU 小时（H800）</th><th>预估成本（$2/h）</th><th>说明</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>预训练（14.8T tokens）</td><td class="num">2,664 K</td><td class="num">$5.328 M</td><td>主体训练，每 1T tokens 用 180K GPU·h</td></tr>
+        <tr><td>上下文扩展（4K → 32K → 128K）</td><td class="num">119 K</td><td class="num">$0.238 M</td><td>YaRN 类技术，分两段扩展</td></tr>
+        <tr><td>后训练（SFT + RL）</td><td class="num">5 K</td><td class="num">$0.010 M</td><td>极少量数据，效率惊人</td></tr>
+        <tr><td><strong>合计</strong></td><td class="num highlight">2,788 K</td><td class="num highlight">$5.576 M</td><td>不含前期研究 / 失败实验成本</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    <strong>这个数字到底有多惊人？</strong>作为对比，Llama 3.1 405B（密集模型）用了约 <strong>30.84M H100 GPU 小时</strong>，
+    粗略折算 <em>11 倍</em>于 DeepSeek-V3。即便考虑到 H800 的带宽劣势（约为 H100 的 44%）、MoE 的额外通信开销，
+    DeepSeek 仍然展示了"算法 + 框架 + 硬件协同设计"能换来的真实数量级红利。
+  </p>
+
+  <div class="keyfact">
+    <div class="label">⚠ 重要免责声明</div>
+    <p>
+      557 万美元只是"<strong>最后一次成功训练</strong>"的算力账。
+      不包括前期数月的算法探索、消融实验、数据清洗、人员工资、基础设施建设。
+      所以"557 万美元做出 GPT-4 级模型"是不准确的——更准确的说法是"<em>557 万美元的 final run 成本</em>"。
+    </p>
+  </div>
+
+  <h3><span class="marker">03 / B</span>FP8 混合精度：业界第一次大规模落地</h3>
+  <p>
+    业内训练大模型的"标配"是 <code>BF16</code>（16 位浮点），更激进的会用 <code>FP16</code>。
+    DeepSeek-V3 第一次把 <code>FP8</code>（8 位浮点）用到了 671B 这个量级的真实训练中，
+    且没有出现不可恢复的损失尖峰。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 800 240" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+      <!-- Three precision bars -->
+      <g>
+        <text x="100" y="35" fill="#9da0b3" font-size="12" text-anchor="middle">FP32</text>
+        <rect x="40" y="45" width="120" height="30" fill="#ff6b6b" fill-opacity="0.25" stroke="#ff6b6b"/>
+        <text x="100" y="65" fill="#e8e9f1" font-size="11" text-anchor="middle">4 字节</text>
+        <text x="100" y="92" fill="#6a6e82" font-size="10" text-anchor="middle">最准 / 最慢 / 最耗内存</text>
+      </g>
+
+      <g>
+        <text x="280" y="35" fill="#9da0b3" font-size="12" text-anchor="middle">BF16 / FP16</text>
+        <rect x="240" y="45" width="80" height="30" fill="#ffb454" fill-opacity="0.25" stroke="#ffb454"/>
+        <text x="280" y="65" fill="#e8e9f1" font-size="11" text-anchor="middle">2 字节</text>
+        <text x="280" y="92" fill="#6a6e82" font-size="10" text-anchor="middle">行业标配</text>
+      </g>
+
+      <g>
+        <text x="460" y="35" fill="#4dd6c8" font-size="12" text-anchor="middle" font-weight="700">FP8 ★</text>
+        <rect x="440" y="45" width="40" height="30" fill="#4dd6c8" fill-opacity="0.4" stroke="#4dd6c8"/>
+        <text x="460" y="65" fill="#e8e9f1" font-size="11" text-anchor="middle">1 字节</text>
+        <text x="460" y="92" fill="#4dd6c8" font-size="10" text-anchor="middle">DeepSeek-V3 主精度</text>
+      </g>
+
+      <!-- Benefits -->
+      <g>
+        <rect x="540" y="20" width="240" height="180" rx="4" fill="#1a1c28" stroke="#4dd6c8"/>
+        <text x="660" y="42" fill="#4dd6c8" font-size="12" text-anchor="middle" font-weight="700">FP8 的三重红利</text>
+
+        <text x="555" y="68" fill="#e8e9f1" font-size="11">▸ 计算吞吐 ↑ 2×</text>
+        <text x="565" y="83" fill="#6a6e82" font-size="10">H800 的 FP8 算力是 BF16 的两倍</text>
+
+        <text x="555" y="105" fill="#e8e9f1" font-size="11">▸ 显存占用 ↓ 50%</text>
+        <text x="565" y="120" fill="#6a6e82" font-size="10">能塞更大批次 / 更长上下文</text>
+
+        <text x="555" y="142" fill="#e8e9f1" font-size="11">▸ 通信带宽 ↓ 50%</text>
+        <text x="565" y="157" fill="#6a6e82" font-size="10">缓解 H800 互联瓶颈</text>
+
+        <text x="555" y="180" fill="#ffb454" font-size="10">⚠ 但精度更敏感，需要细粒度量化</text>
+        <text x="565" y="194" fill="#6a6e82" font-size="10">DeepSeek 用 1×128 / 128×128 块量化</text>
+      </g>
+
+      <!-- Caveat note -->
+      <text x="280" y="180" fill="#ffb454" font-size="11" text-anchor="middle">关键 GEMM 用 FP8，敏感操作（如累加、归一化）保留更高精度</text>
+      <text x="280" y="200" fill="#6a6e82" font-size="10" text-anchor="middle">混合精度策略：精打细算到每个算子</text>
+    </svg>
+    <figcaption><span class="fig-num">FIG 05</span>FP8 vs 传统精度的对比。第一次在万亿级 MoE 上验证 FP8 训练可行</figcaption>
+  </figure>
+
+  <p>
+    FP8 不是"无脑用就行"，DeepSeek 的工程团队做了大量精细工作：
+    <strong>分块量化</strong>（1×128 行 / 128×128 块）、关键累加保留 FP32、敏感算子（LayerNorm、Softmax 等）维持高精度。
+    这套"精打细算到每个算子"的策略，才让 FP8 既快又稳。
+  </p>
+
+  <h3><span class="marker">03 / C</span>并行策略：DualPipe + 64 路专家并行</h3>
+  <p>
+    训 671B 模型必然要用到各种"并行"。DeepSeek-V3 的并行配方相当独特：
+  </p>
+
+  <ul class="bullet">
+    <li><strong>16 路流水线并行（PP-16）</strong>：模型按层切成 16 段，配合自研的 <code>DualPipe</code> 算法，把前向和反向的通信与计算高度重叠，几乎消除了流水线"气泡"。</li>
+    <li><strong>64 路专家并行（EP-64）</strong>：256 个路由专家分布在 64 个 GPU 上（8 节点 × 8 卡）。MoE 的核心通信开销 <code>all-to-all</code> 也做了节点感知优化。</li>
+    <li><strong>ZeRO-1 数据并行</strong>：只切分优化器状态，进一步减少显存。</li>
+    <li><strong>不用张量并行（TP）</strong>：得益于显存优化做到位，省掉了 TP 的额外通信开销。</li>
+  </ul>
+
+  <figure>
+    <svg viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+      <!-- Title -->
+      <text x="400" y="22" fill="#4dd6c8" font-size="13" text-anchor="middle" font-weight="700">DualPipe：让计算与通信"双向重叠"</text>
+
+      <!-- Traditional pipeline -->
+      <text x="60" y="55" fill="#9da0b3" font-size="11">传统 PP</text>
+      <text x="60" y="70" fill="#6a6e82" font-size="10">气泡多</text>
+
+      <g transform="translate(140, 45)">
+        <rect x="0" y="0" width="60" height="20" fill="#7c83ff" fill-opacity="0.4"/>
+        <rect x="60" y="0" width="60" height="20" fill="#1a1c28" stroke="#2a2d3d"/>
+        <rect x="120" y="0" width="60" height="20" fill="#7c83ff" fill-opacity="0.4"/>
+        <rect x="180" y="0" width="60" height="20" fill="#1a1c28" stroke="#2a2d3d"/>
+        <rect x="240" y="0" width="100" height="20" fill="#ff6b6b" fill-opacity="0.3"/>
+        <rect x="340" y="0" width="60" height="20" fill="#7c83ff" fill-opacity="0.4"/>
+        <rect x="400" y="0" width="60" height="20" fill="#1a1c28" stroke="#2a2d3d"/>
+        <rect x="460" y="0" width="60" height="20" fill="#7c83ff" fill-opacity="0.4"/>
+        <text x="290" y="40" fill="#ff6b6b" font-size="10" text-anchor="middle">↑ 气泡</text>
+      </g>
+
+      <!-- DualPipe -->
+      <text x="60" y="115" fill="#4dd6c8" font-size="11">DualPipe</text>
+      <text x="60" y="130" fill="#6a6e82" font-size="10">通信≈隐藏</text>
+
+      <g transform="translate(140, 105)">
+        <!-- Forward pass -->
+        <rect x="0" y="0" width="60" height="20" fill="#7c83ff" fill-opacity="0.4"/>
+        <rect x="60" y="0" width="60" height="20" fill="#4dd6c8" fill-opacity="0.4"/>
+        <rect x="120" y="0" width="60" height="20" fill="#7c83ff" fill-opacity="0.4"/>
+        <rect x="180" y="0" width="60" height="20" fill="#4dd6c8" fill-opacity="0.4"/>
+        <rect x="240" y="0" width="60" height="20" fill="#7c83ff" fill-opacity="0.4"/>
+        <rect x="300" y="0" width="60" height="20" fill="#4dd6c8" fill-opacity="0.4"/>
+        <rect x="360" y="0" width="60" height="20" fill="#7c83ff" fill-opacity="0.4"/>
+        <rect x="420" y="0" width="60" height="20" fill="#4dd6c8" fill-opacity="0.4"/>
+        <rect x="480" y="0" width="60" height="20" fill="#7c83ff" fill-opacity="0.4"/>
+        <text x="270" y="40" fill="#4dd6c8" font-size="10" text-anchor="middle">↑ 计算 / 通信交错重叠</text>
+      </g>
+
+      <!-- Legend -->
+      <g transform="translate(140, 170)">
+        <rect x="0" y="0" width="14" height="14" fill="#7c83ff" fill-opacity="0.4"/>
+        <text x="20" y="12" fill="#9da0b3" font-size="11">计算</text>
+        <rect x="80" y="0" width="14" height="14" fill="#4dd6c8" fill-opacity="0.4"/>
+        <text x="100" y="12" fill="#9da0b3" font-size="11">通信（被隐藏）</text>
+        <rect x="240" y="0" width="14" height="14" fill="#ff6b6b" fill-opacity="0.3"/>
+        <text x="260" y="12" fill="#9da0b3" font-size="11">气泡（GPU 闲置）</text>
+      </g>
+
+      <!-- Hardware setup -->
+      <g transform="translate(0, 220)">
+        <text x="400" y="0" fill="#ffb454" font-size="12" text-anchor="middle" font-weight="700">硬件配置</text>
+
+        <g transform="translate(150, 20)">
+          <rect x="0" y="0" width="100" height="60" rx="3" fill="#1a1c28" stroke="#2a2d3d"/>
+          <text x="50" y="22" fill="#e8e9f1" font-size="11" text-anchor="middle" font-weight="700">2048</text>
+          <text x="50" y="38" fill="#9da0b3" font-size="10" text-anchor="middle">H800 GPUs</text>
+          <text x="50" y="54" fill="#6a6e82" font-size="9" text-anchor="middle">256 节点 × 8 卡</text>
+        </g>
+
+        <g transform="translate(280, 20)">
+          <rect x="0" y="0" width="100" height="60" rx="3" fill="#1a1c28" stroke="#2a2d3d"/>
+          <text x="50" y="22" fill="#e8e9f1" font-size="11" text-anchor="middle" font-weight="700">PP-16</text>
+          <text x="50" y="38" fill="#9da0b3" font-size="10" text-anchor="middle">流水线并行</text>
+          <text x="50" y="54" fill="#6a6e82" font-size="9" text-anchor="middle">DualPipe 算法</text>
+        </g>
+
+        <g transform="translate(410, 20)">
+          <rect x="0" y="0" width="100" height="60" rx="3" fill="#1a1c28" stroke="#2a2d3d"/>
+          <text x="50" y="22" fill="#e8e9f1" font-size="11" text-anchor="middle" font-weight="700">EP-64</text>
+          <text x="50" y="38" fill="#9da0b3" font-size="10" text-anchor="middle">专家并行</text>
+          <text x="50" y="54" fill="#6a6e82" font-size="9" text-anchor="middle">8 节点共享</text>
+        </g>
+
+        <g transform="translate(540, 20)">
+          <rect x="0" y="0" width="100" height="60" rx="3" fill="#1a1c28" stroke="#2a2d3d"/>
+          <text x="50" y="22" fill="#e8e9f1" font-size="11" text-anchor="middle" font-weight="700">ZeRO-1</text>
+          <text x="50" y="38" fill="#9da0b3" font-size="10" text-anchor="middle">数据并行</text>
+          <text x="50" y="54" fill="#6a6e82" font-size="9" text-anchor="middle">优化器分片</text>
+        </g>
+      </g>
+    </svg>
+    <figcaption><span class="fig-num">FIG 06</span>DualPipe 流水线并行示意：通信被前后向计算"夹"住，几乎不浪费 GPU 周期</figcaption>
+  </figure>
+
+  <h3><span class="marker">03 / D</span>训练数据与后训练</h3>
+  <p>
+    <strong>预训练数据：</strong>14.8T tokens，对比 V2 提升了数学和代码占比，并大幅扩充了多语种语料（特别是中文）。
+    数据质量过滤、去重、毒性筛选是标配。
+  </p>
+  <p>
+    <strong>上下文扩展：</strong>从 4K 起步，分两段扩到 32K、再扩到 128K，使用类 YaRN 的位置编码插值方法。
+  </p>
+  <p>
+    <strong>后训练（SFT + RL）：</strong>这部分别有亮点——DeepSeek 创造性地用了
+    <strong>从 R1 蒸馏推理能力</strong>的方法。把 R1 系列模型的"长链式思维"模式（验证、反思、回溯）
+    迁移到 V3，但又控制了输出风格和长度，避免变成话痨。
+  </p>
+  <p>
+    强化学习阶段使用了<strong>规则奖励 + 模型奖励</strong>的混合策略：
+    数学/代码这类有标准答案的任务用规则奖励（执行测试用例、对答案），
+    开放生成则用奖励模型评分。
+  </p>
+
+  <div class="keyfact">
+    <div class="label">训练稳定性</div>
+    <p>
+      整个 14.8T tokens 的预训练过程<strong>没有出现一次不可恢复的 loss 尖峰</strong>，
+      也没有任何回滚——这在万亿参数级 MoE 上几乎是奇迹。
+      它的工程意义甚至超过了精度数字本身：意味着这套训练方案是<em>可复现、可扩展</em>的。
+    </p>
+  </div>
+</section>
+
+<!-- ============ SECTION 4: INFERENCE ============ -->
+<section id="sec4">
+  <div class="sec-num">— SECTION 04 —</div>
+  <h2>推理与部署</h2>
+  <p class="sec-lead">
+    一个模型再聪明，跑起来贵也没人用。DeepSeek-V3 的推理设计同样是"<em>为成本服务</em>"——
+    MLA 砍显存，MTP 投机解码砍延迟，预填充/解码分离砍硬件。
+  </p>
+
+  <h3><span class="marker">04 / A</span>预填充 / 解码分离架构</h3>
+  <p>
+    LLM 推理有两个截然不同的阶段：
+  </p>
+  <ul class="bullet">
+    <li><strong>Prefill（预填充）</strong>：处理用户输入的所有 token，<em>计算密集</em>，对 GPU 算力敏感。</li>
+    <li><strong>Decode（解码）</strong>：一次生成一个 token，<em>访存密集</em>（每步都要读全部 KV Cache），对显存带宽敏感。</li>
+  </ul>
+  <p>
+    DeepSeek-V3 在线上部署时把这两个阶段<strong>放到不同的 GPU 池</strong>里跑，
+    各自做针对性优化（不同的并行配置、不同的批次策略），
+    避免一个慢拖累另一个，整体吞吐能再榨出 30%~50%。
+  </p>
+
+  <h3><span class="marker">04 / B</span>MTP 投机解码：1.8 倍吞吐免费送</h3>
+  <p>
+    前面说过 MTP 模块除了训练加速，推理时还能当"草稿生成器"。具体流程是：
+  </p>
+  <ol style="list-style:decimal; padding-left: 24px; margin: 18px 0; color: var(--text-dim);">
+    <li>主模型生成第 t+1 个 token，同时 MTP 头猜测第 t+2 个 token；</li>
+    <li>把这两个 token 一起作为输入再过一次主模型，验证 t+2 是否合理；</li>
+    <li>如果合理，一次输出 2 个 token；不合理则丢弃，损失不大（前向只做了 1 次）；</li>
+    <li>实测 t+2 的接受率高达 <strong>85%~90%</strong>，整体吞吐提升约 <strong>1.8 倍</strong>。</li>
+  </ol>
+
+  <div class="analogy">
+    <span class="analogy-tag">打个比方</span>
+    <p>
+      就像两个人合作翻译：第一个人翻译当前句，第二个人<em>提前猜下一句</em>。
+      如果猜对了，进度直接加倍；猜错了也只是浪费一点点时间，不会比一个人翻译更慢。
+      所以"<strong>免费试错</strong>"，期望收益恒为正。
+    </p>
+  </div>
+
+  <h3><span class="marker">04 / C</span>显存预算的实际表现</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>项目</th><th>DeepSeek-V3</th><th>密集 70B 对照</th><th>说明</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>模型权重（FP8）</td><td class="num">≈ 700 GB</td><td class="num">≈ 70 GB</td><td>V3 所有专家都要常驻显存</td></tr>
+        <tr><td>每 Token KV Cache</td><td class="num highlight">极小（MLA）</td><td class="num">较大</td><td>MLA 大幅压缩</td></tr>
+        <tr><td>128K 上下文 KV</td><td class="num highlight">数百 MB / 用户</td><td class="num">数十 GB / 用户</td><td>差距非常显著</td></tr>
+        <tr><td>每 Token 计算</td><td class="num highlight">37 B FLOPs</td><td class="num">70 B FLOPs</td><td>MoE 稀疏激活的好处</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    一个直观结论：<strong>V3 适合"多卡多用户"场景</strong>。
+    模型权重的固定成本高（必须放进去），但每个并发用户的边际成本极低（KV 小、激活少）。
+    所以服务化部署时，规模越大、用户越多，单 token 成本越低。
+    这正是 DeepSeek 能把 API 价格定到惊人程度的根本原因。
+  </p>
+</section>
+
+<!-- ============ SECTION 5: BENCHMARKS ============ -->
+<section id="sec5">
+  <div class="sec-num">— SECTION 05 —</div>
+  <h2>性能指标</h2>
+  <p class="sec-lead">
+    数字是骗不了人的。DeepSeek-V3 在多项主流基准上<strong>全面超越所有开源模型</strong>，
+    与 GPT-4o、Claude 3.5 Sonnet 互有胜负。下面是几组关键对比。
+  </p>
+
+  <p>
+    所有数字均为 DeepSeek-V3 技术报告中公开的初始版本（2024 年 12 月）成绩。
+    后续 <code>V3-0324</code>、<code>V3.1</code>、<code>V3.2</code> 还有大幅提升，本节末尾会简要提及。
+  </p>
+
+  <h3><span class="marker">05 / A</span>知识与综合能力</h3>
+
+  <div class="bench-block">
+    <div class="bench-title">MMLU-Pro · 综合学科基准（越高越好）</div>
+    <div class="bench-row dsv3"><div class="label">DeepSeek-V3</div><div class="bench-bar"><div class="fill" style="width:96.4%"></div></div><div class="bench-val">75.9</div></div>
+    <div class="bench-row gpt4"><div class="label">GPT-4o (0513)</div><div class="bench-bar"><div class="fill" style="width:92.6%"></div></div><div class="bench-val">72.6</div></div>
+    <div class="bench-row claude"><div class="label">Claude 3.5 Sonnet</div><div class="bench-bar"><div class="fill" style="width:99.0%"></div></div><div class="bench-val">78.0</div></div>
+    <div class="bench-row"><div class="label">Llama 3.1 405B</div><div class="bench-bar"><div class="fill" style="width:93.0%"></div></div><div class="bench-val">73.3</div></div>
+    <div class="bench-row"><div class="label">Qwen2.5 72B</div><div class="bench-bar"><div class="fill" style="width:90.9%"></div></div><div class="bench-val">71.6</div></div>
+
+    <div class="bench-title">GPQA-Diamond · 研究生级科学问答</div>
+    <div class="bench-row dsv3"><div class="label">DeepSeek-V3</div><div class="bench-bar"><div class="fill" style="width:75.0%"></div></div><div class="bench-val">59.1</div></div>
+    <div class="bench-row gpt4"><div class="label">GPT-4o (0513)</div><div class="bench-bar"><div class="fill" style="width:63.4%"></div></div><div class="bench-val">49.9</div></div>
+    <div class="bench-row claude"><div class="label">Claude 3.5 Sonnet</div><div class="bench-bar"><div class="fill" style="width:82.5%"></div></div><div class="bench-val">65.0</div></div>
+    <div class="bench-row"><div class="label">Llama 3.1 405B</div><div class="bench-bar"><div class="fill" style="width:64.9%"></div></div><div class="bench-val">51.1</div></div>
+    <div class="bench-row"><div class="label">Qwen2.5 72B</div><div class="bench-bar"><div class="fill" style="width:62.2%"></div></div><div class="bench-val">49.0</div></div>
+
+    <div class="bench-title">DROP · 阅读理解与推理</div>
+    <div class="bench-row dsv3"><div class="label">DeepSeek-V3</div><div class="bench-bar"><div class="fill" style="width:91.6%"></div></div><div class="bench-val">91.6</div></div>
+    <div class="bench-row gpt4"><div class="label">GPT-4o (0513)</div><div class="bench-bar"><div class="fill" style="width:83.7%"></div></div><div class="bench-val">83.7</div></div>
+    <div class="bench-row claude"><div class="label">Claude 3.5 Sonnet</div><div class="bench-bar"><div class="fill" style="width:88.3%"></div></div><div class="bench-val">88.3</div></div>
+    <div class="bench-row"><div class="label">Llama 3.1 405B</div><div class="bench-bar"><div class="fill" style="width:88.7%"></div></div><div class="bench-val">88.7</div></div>
+  </div>
+
+  <h3><span class="marker">05 / B</span>数学与编程</h3>
+
+  <div class="bench-block">
+    <div class="bench-title">MATH-500 · 数学竞赛题</div>
+    <div class="bench-row dsv3"><div class="label">DeepSeek-V3</div><div class="bench-bar"><div class="fill" style="width:90.2%"></div></div><div class="bench-val">90.2</div></div>
+    <div class="bench-row gpt4"><div class="label">GPT-4o (0513)</div><div class="bench-bar"><div class="fill" style="width:74.6%"></div></div><div class="bench-val">74.6</div></div>
+    <div class="bench-row claude"><div class="label">Claude 3.5 Sonnet</div><div class="bench-bar"><div class="fill" style="width:78.3%"></div></div><div class="bench-val">78.3</div></div>
+    <div class="bench-row"><div class="label">Llama 3.1 405B</div><div class="bench-bar"><div class="fill" style="width:73.8%"></div></div><div class="bench-val">73.8</div></div>
+    <div class="bench-row"><div class="label">Qwen2.5 72B</div><div class="bench-bar"><div class="fill" style="width:80.0%"></div></div><div class="bench-val">80.0</div></div>
+
+    <div class="bench-title">AIME 2024 · 美国数学邀请赛</div>
+    <div class="bench-row dsv3"><div class="label">DeepSeek-V3</div><div class="bench-bar"><div class="fill" style="width:60.3%"></div></div><div class="bench-val">39.2</div></div>
+    <div class="bench-row gpt4"><div class="label">GPT-4o (0513)</div><div class="bench-bar"><div class="fill" style="width:14.3%"></div></div><div class="bench-val">9.3</div></div>
+    <div class="bench-row claude"><div class="label">Claude 3.5 Sonnet</div><div class="bench-bar"><div class="fill" style="width:24.6%"></div></div><div class="bench-val">16.0</div></div>
+    <div class="bench-row"><div class="label">Llama 3.1 405B</div><div class="bench-bar"><div class="fill" style="width:35.8%"></div></div><div class="bench-val">23.3</div></div>
+
+    <div class="bench-title">Codeforces · 编程竞赛百分位</div>
+    <div class="bench-row dsv3"><div class="label">DeepSeek-V3</div><div class="bench-bar"><div class="fill" style="width:79.4%"></div></div><div class="bench-val">51.6</div></div>
+    <div class="bench-row gpt4"><div class="label">GPT-4o (0513)</div><div class="bench-bar"><div class="fill" style="width:36.3%"></div></div><div class="bench-val">23.6</div></div>
+    <div class="bench-row claude"><div class="label">Claude 3.5 Sonnet</div><div class="bench-bar"><div class="fill" style="width:31.2%"></div></div><div class="bench-val">20.3</div></div>
+    <div class="bench-row"><div class="label">Llama 3.1 405B</div><div class="bench-bar"><div class="fill" style="width:38.9%"></div></div><div class="bench-val">25.3</div></div>
+
+    <div class="bench-title">SWE-bench Verified · 真实仓库 bug 修复</div>
+    <div class="bench-row dsv3"><div class="label">DeepSeek-V3</div><div class="bench-bar"><div class="fill" style="width:64.6%"></div></div><div class="bench-val">42.0</div></div>
+    <div class="bench-row gpt4"><div class="label">GPT-4o (0513)</div><div class="bench-bar"><div class="fill" style="width:59.7%"></div></div><div class="bench-val">38.8</div></div>
+    <div class="bench-row claude"><div class="label">Claude 3.5 Sonnet</div><div class="bench-bar"><div class="fill" style="width:78.2%"></div></div><div class="bench-val">50.8</div></div>
+    <div class="bench-row"><div class="label">Llama 3.1 405B</div><div class="bench-bar"><div class="fill" style="width:36.6%"></div></div><div class="bench-val">23.8</div></div>
+  </div>
+
+  <h3><span class="marker">05 / C</span>怎么读这些数字</h3>
+
+  <ul class="bullet">
+    <li><strong>数学和编程是 V3 的强项</strong>：MATH-500 接近 90，AIME 远超同期任何非推理模型，Codeforces 完胜 GPT-4o 和 Claude 3.5 Sonnet。这背后是大量代码 / 数学训练数据 + R1 蒸馏推理模式带来的红利。</li>
+    <li><strong>知识与综合任务接近顶级闭源模型</strong>：MMLU-Pro 75.9 与 Claude 3.5 Sonnet 的 78.0 仅差 2 个百分点，但开源 + 价格便宜数倍。</li>
+    <li><strong>Agent / 工具调用类任务（SWE-bench）仍稍逊于 Claude 3.5 Sonnet</strong>：这是 Claude 的传统强项，V3 在 V3.1、V3.2 中已大幅追近。</li>
+    <li><strong>事实性（SimpleQA）相对偏弱</strong>：开源模型普遍如此，因为高质量事实数据更难规模化。</li>
+  </ul>
+
+  <div class="keyfact">
+    <div class="label">综合定位</div>
+    <p>
+      在 2024 年 12 月发布时，DeepSeek-V3 是<strong>第一个在多数客观基准上能与 GPT-4o / Claude 3.5 Sonnet 平起平坐的开源模型</strong>。
+      考虑到它的训练成本只有 Llama 3.1 405B 的 1/10、API 价格只有 GPT-4o 的几十分之一，
+      性价比是降维打击。
+    </p>
+  </div>
+</section>
+
+<!-- ============ SECTION 6: EVOLUTION ============ -->
+<section id="sec6">
+  <div class="sec-num">— SECTION 06 —</div>
+  <h2>后续演进与意义</h2>
+  <p class="sec-lead">
+    V3 不是终点，而是 DeepSeek 一系列模型的"<em>地基</em>"。
+    R1 复用了 V3 的预训练权重做推理强化，V3.1/V3.2 则在 V3 基础上不断打磨。
+  </p>
+
+  <h3><span class="marker">06 / A</span>V3 家族的迭代轨迹</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>版本</th><th>发布</th><th>主要变化</th><th>代表分数</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="highlight">V3 (initial)</td><td>2024-12</td><td>原版发布</td><td>MMLU-Pro 75.9 / GPQA 59.1</td></tr>
+        <tr><td class="highlight">V3-0324</td><td>2025-03</td><td>从 R1 蒸馏推理能力，前端代码能力提升</td><td>MMLU-Pro 81.2 / GPQA 68.4 / AIME 59.4</td></tr>
+        <tr><td class="highlight">V3.1</td><td>2025</td><td>thinking / non-thinking 模式合并；agent 能力增强</td><td>R1 风格推理速度大幅提升</td></tr>
+        <tr><td class="highlight">V3.2</td><td>2025-12</td><td>引入 DSA（DeepSeek 稀疏注意力）；agent / 数学双突破</td><td>对标 Gemini 3 Pro / Kimi K2 / GPT-5</td></tr>
+        <tr><td>R1</td><td>2025-01</td><td>基于 V3 预训练 + 大规模 RL，专做长链推理</td><td>第一个完全开源的"思考型"模型</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3><span class="marker">06 / B</span>V3 改变了什么</h3>
+
+  <p>
+    DeepSeek-V3 在工程意义和行业意义上的影响，可能比技术指标本身还要深远：
+  </p>
+
+  <ul class="bullet">
+    <li><strong>打破"算力即一切"的迷思</strong>：证明在巧妙的架构和工程设计下，几千万人民币就能训出对标 GPT-4 的模型。这直接改变了创业公司、研究团队的投入预期。</li>
+    <li><strong>把 MoE 从"理论时髦"做成"工程实用"</strong>：MLA + 细粒度 MoE + 无辅助损失 + MTP 这一整套，证明 MoE 不是"用了就崩"，而是可以稳定训练、高效推理。</li>
+    <li><strong>FP8 训练正式落地</strong>：在它之前，业界对 FP8 在大模型训练中的可行性还有很多怀疑。V3 用 14.8T tokens 的稳定训练做了背书，后续模型陆续跟进。</li>
+    <li><strong>开源生态拐点</strong>：V3 + R1 让开源模型第一次在多个维度真正"够得着"闭源旗舰，加速了应用层的去中心化。</li>
+    <li><strong>引发地缘 / 资本震动</strong>：发布后引发对 NVIDIA 估值的重新审视、对芯片管制有效性的讨论，影响远超技术圈。</li>
+  </ul>
+
+  <div class="keyfact">
+    <div class="label">最后一句话</div>
+    <p>
+      DeepSeek-V3 是一次"<em>用算法的精度，对冲算力的稀缺</em>"的胜利。
+      它告诉所有人：在 LLM 这条路上，"<strong>更聪明</strong>"和"<strong>更多卡</strong>"还是有的一拼的。
+      这种精神，比任何 benchmark 数字都更有价值。
+    </p>
+  </div>
+</section>
+
+<footer>
+  <div class="sig">— 完 —</div>
+  <p>
+    数据来源：DeepSeek-V3 Technical Report (arXiv:2412.19437)、官方 GitHub / HuggingFace、第三方分析报告<br>
+    本报告基于截至 2026 年 5 月的公开信息整理，部分技术细节随版本更新可能有变化
+  </p>
+</footer>
+
+</div>
+
+</body>
+</html>
