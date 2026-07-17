@@ -198,6 +198,13 @@ a:visited { color: #205caa; }
   margin: 40px 0 20px;
 }
 
+.post-content h1 {
+  font-size: 36px;
+  letter-spacing: -1.5px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
 .post-content h2 {
   font-size: 32px;
   letter-spacing: -1.25px;
@@ -247,6 +254,38 @@ a:visited { color: #205caa; }
   border: 0;
   padding-right: 0;
   padding-left: 0;
+}
+
+/* tables */
+.post-content table {
+  border-collapse: collapse;
+  width: 100%;
+  display: block;
+  overflow-x: auto;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.post-content table th,
+.post-content table td {
+  border: 1px solid #e0e0e0;
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.post-content table th {
+  background-color: #f6f6f8;
+  font-weight: 600;
+}
+
+.post-content table tr:nth-child(even) td { background-color: #fafafa; }
+
+/* mermaid diagrams: rendered at natural size, scrolled rather than shrunk */
+.post-content .mermaid {
+  margin: 30px 0;
+  overflow-x: auto;
+  padding-bottom: 6px;
 }
 
 /* terminal */
