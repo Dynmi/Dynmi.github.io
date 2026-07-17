@@ -29,39 +29,6 @@ layout: default
   <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
   {% endif %}
 
-  <!-- mermaid -->
-  {% if page.mermaid %}
-  <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-
-    // Rouge wraps a ```mermaid fence in div.language-mermaid; the second
-    // selector covers a build with highlighting off. Unwrap either to the bare
-    // source before mermaid parses it.
-    document.querySelectorAll('div.language-mermaid, pre > code.language-mermaid').forEach(function (node) {
-      var block = node.tagName === 'CODE' ? node.parentNode : node;
-      var host = document.createElement('div');
-      host.className = 'mermaid';
-      host.textContent = block.textContent.trim();
-      block.parentNode.replaceChild(host, block);
-    });
-
-    // Render at natural size and let .mermaid scroll horizontally: several
-    // diagrams here are ~1700-2500px wide and scaling them into the 800px
-    // column shrinks the labels past legibility.
-    var wide = { useMaxWidth: false };
-    mermaid.initialize({
-      startOnLoad: true,
-      theme: 'neutral',
-      securityLevel: 'strict',
-      flowchart: wide,
-      sequence: wide,
-      timeline: wide,
-      mindmap: wide,
-      quadrantChart: wide
-    });
-  </script>
-  {% endif %}
-
   <header class="post-header">
     <h1>{{ page.title }}</h1>
     <p class="meta">{{ page.date | date: "%b %-d, %Y" }}{% if page.author %} • {{ page.author }}{% endif %}{% if page.meta %} • {{ page.meta }}{% endif %}</p>
