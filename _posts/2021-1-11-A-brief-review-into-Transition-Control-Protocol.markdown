@@ -2,9 +2,9 @@
 layout: post
 comments: false
 title:  "A brief review on Transmission Control Protocol"
-excerpt: "..."
 date:   2021-1-11 19:00:00
 mathjax: false
+lang: en
 ---
 
 <div class="imgcap">

@@ -2,9 +2,9 @@
 layout: post
 comments: false
 title:  "Enzo in Firenze"
-excerpt: "..."
 date:   2025-06-01 09:00:00
 mathjax: false
+lang: zh
 ---
 ## 从皮恩扎到佛罗伦萨
 

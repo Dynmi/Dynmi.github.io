@@ -1,19 +1,12 @@
 <!DOCTYPE html>
-<html>
-
-  {% include head.html %}
-
-    <body>
-
-    {% include header.html %}
-
-    <div class="page-content">
-      <div class="wrap">
-      {{ content }}
-      </div>
-    </div>
-
-    {% include footer.html %}
-
-    </body>
+<html lang="{{ page.lang | default: site.lang | default: 'zh-CN' }}">
+{% include head.html %}
+<body>
+{% include header.html %}
+<main class="site-main">
+{{ content }}
+</main>
+{% include footer.html %}
+<script src="{{ '/assets/js/blog.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
+</body>
 </html>

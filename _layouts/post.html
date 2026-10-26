@@ -1,60 +1,72 @@
 ---
 layout: default
 ---
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
-<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
-
-<div class="post">
-
-  <!-- mathjax -->
-  {% if page.mathjax %}
-  <script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-      TeX: {
-        equationNumbers: {
-          autoNumber: "AMS"
-        }
-      },
-      SVG: {
-        scale: 90
-      },
-      tex2jax: {
-        inlineMath: [ ['$','$'] ],
-        displayMath: [ ['$$','$$'] ],
-        processEscapes: true,
-      }
-    });
-  </script>
-  <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-  {% endif %}
-
-  <header class="post-header">
-    <h1>{{ page.title }}</h1>
-    <p class="meta">{{ page.date | date: "%b %-d, %Y" }}{% if page.author %} • {{ page.author }}{% endif %}{% if page.meta %} • {{ page.meta }}{% endif %}</p>
+{%- comment -%}
+  文章模板：标题区全部由 front matter 生成，正文只放内容。字段说明见 _templates/post.md。
+{%- endcomment -%}
+{%- assign lang = page.lang | default: site.lang | default: 'zh-CN' -%}
+{%- assign zh = false -%}
+{%- if lang contains 'zh' -%}{%- assign zh = true -%}{%- endif -%}
+<div class="progress" aria-hidden="true"></div>
+<article class="post" lang="{{ lang }}" data-post data-toc="{{ page.toc }}" data-evidence-tags="{{ page.evidence_tags }}">
+  <header class="post-hero">
+    {%- if page.eyebrow %}
+    <div class="eyebrow">{{ page.eyebrow }}</div>
+    {%- endif %}
+    <h1 class="post-title">{% if page.display_title %}{{ page.display_title }}{% else %}{{ page.title | escape }}{% endif %}</h1>
+    {%- if page.subtitle %}
+    <p class="post-subtitle">{{ page.subtitle }}</p>
+    {%- endif %}
+    {%- if page.deck %}
+    <p class="deck">{{ page.deck }}</p>
+    {%- endif %}
+    <div class="post-meta">
+      <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: '%Y-%m-%d' }}</time>
+      {%- if page.author %}<span>{{ page.author }}</span>{% endif %}
+      {%- if page.meta %}<span>{{ page.meta }}</span>{% endif %}
+    </div>
+    {%- if page.facts %}
+    <dl class="facts">
+      {%- for f in page.facts %}
+      <div><dt>{{ f.label }}</dt><dd>{{ f.value }}</dd></div>
+      {%- endfor %}
+    </dl>
+    {%- endif %}
+    {%- if page.stats %}
+    <div class="stats">
+      {%- for s in page.stats %}
+      <div class="stat"><div class="v">{{ s.value }}{% if s.unit %}<small>{{ s.unit }}</small>{% endif %}</div><div class="l">{{ s.label }}</div></div>
+      {%- endfor %}
+    </div>
+    {%- endif %}
   </header>
 
-  <article class="post-content">
-  {{ content }}
-  </article>
-
-  <!-- gitment comments -->
-  <div>
-    {% if page.comments %}
-    <div id="gitalk_container"></div>
-    <script>
-     const gitalk = new Gitalk({
-       clientID: 'b47f56c253316613f70e',
-       clientSecret: '94ddc703708b8b274c3fbb2156385d149bf3ecb2',
-       owner: 'Dynmi',
-       repo: 'Dynmi.github.io',
-       admin: ['Dynmi'],
-       id: location.pathname,      // Ensure uniqueness and length less than 50
-       distractionFreeMode: false  // Facebook-like distraction free mode
-     })
-     gitalk.render('gitalk_container')
-    </script>
-    {% endif %}
+  <div class="post-body">
+    <nav class="toc" aria-label="{% if zh %}目录{% else %}Contents{% endif %}">
+      <div class="toc-inner"><p class="toc-title">{% if zh %}目录{% else %}Contents{% endif %}</p></div>
+    </nav>
+    <div class="post-content" id="content">
+{{ content }}
+    </div>
   </div>
 
-</div>
+  {%- if page.previous or page.next %}
+  <nav class="post-nav">
+    {%- if page.previous %}
+    <a class="prev" href="{{ page.previous.url | relative_url }}"><span>{% if zh %}上一篇{% else %}Previous{% endif %}</span>{{ page.previous.title | escape }}</a>
+    {%- endif %}
+    {%- if page.next %}
+    <a class="next" href="{{ page.next.url | relative_url }}"><span>{% if zh %}下一篇{% else %}Next{% endif %}</span>{{ page.next.title | escape }}</a>
+    {%- endif %}
+  </nav>
+  {%- endif %}
+
+  {%- if page.comments %}
+  {% include comments.html %}
+  {%- endif %}
+</article>
+<button class="toc-toggle" type="button">☰ {% if zh %}目录{% else %}Contents{% endif %}</button>
+<button class="back-top" type="button" aria-label="{% if zh %}回到顶部{% else %}Back to top{% endif %}">↑</button>
+{%- if page.mathjax %}
+{% include mathjax.html %}
+{%- endif %}

@@ -1,17 +1,18 @@
 ---
-layout: null
+layout: post
 title: "DeepSeekV3: 极致工程优化让模型成本下降一个数量级"
 date: 2026-05-13 12:30:00
 excerpt: "671B 总参数、37B 激活参数的开源 MoE 模型，用 557 万美元训出来——从架构、训练、推理、性能四个维度拆解 DeepSeek-V3。"
----
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DeepSeek-V3 深度解析报告</title>
-<link rel="stylesheet" href="/css/post-minimal.css">
-<style>
+lang: zh
+eyebrow: "技术深度解析"
+display_title: "DeepSeek-V3<br>把大模型的成本<br>砍下一个数量级"
+deck: "一个 <strong>671B</strong> 总参数、<strong>37B</strong> 激活参数的开源 MoE 模型，用 <strong>557 万美元</strong>训出来，性能对标 GPT-4o 与 Claude 3.5 Sonnet。本报告从架构、训练、推理、性能四个维度，把它讲清楚。"
+stats:
+  - { value: "671", unit: B, label: "总参数量" }
+  - { value: "37", unit: B, label: "每 Token 激活" }
+  - { value: "14.8", unit: T, label: "预训练 Token" }
+  - { value: "$5.58", unit: M, label: "训练总成本" }
+extra_css: |
   /* bench bars — not in shared template, unavoidable per-post addition */
   .bench-block { margin: 28px 0; }
   .bench-title {
@@ -52,41 +53,7 @@ excerpt: "671B 总参数、37B 激活参数的开源 MoE 模型，用 557 万美
   figure svg [fill-opacity="0.06"] { fill-opacity: .04; }
   figure svg [fill-opacity="0.05"] { fill-opacity: .04; }
   figure svg text[fill="#0d0e14"] { fill: var(--ink); }
-</style>
-</head>
-<body>
-
-<div class="wrap">
-
-<!-- ============ HERO ============ -->
-<header class="hero">
-  <div class="eyebrow">技术深度解析 · 2026-05-13</div>
-  <h1>DeepSeek-V3<br>把大模型的成本<br>砍下一个数量级</h1>
-  <p class="deck">
-    一个 <strong>671B</strong> 总参数、<strong>37B</strong> 激活参数的开源 MoE 模型，
-    用 <strong>557 万美元</strong>训出来，性能对标 GPT-4o 与 Claude 3.5 Sonnet。
-    本报告从架构、训练、推理、性能四个维度，把它讲清楚。
-  </p>
-
-  <div class="stats">
-    <div class="stat">
-      <div class="v">671<small>B</small></div>
-      <div class="l">总参数量</div>
-    </div>
-    <div class="stat">
-      <div class="v">37<small>B</small></div>
-      <div class="l">每 Token 激活</div>
-    </div>
-    <div class="stat">
-      <div class="v">14.8<small>T</small></div>
-      <div class="l">预训练 Token</div>
-    </div>
-    <div class="stat">
-      <div class="v">$5.58<small>M</small></div>
-      <div class="l">训练总成本</div>
-    </div>
-  </div>
-</header>
+---
 
 <!-- ============ SECTION 1 ============ -->
 <section id="sec1">
@@ -1018,8 +985,3 @@ excerpt: "671B 总参数、37B 激活参数的开源 MoE 模型，用 557 万美
   </p>
   <div class="endmark">— 完 —</div>
 </footer>
-
-</div>
-
-</body>
-</html>

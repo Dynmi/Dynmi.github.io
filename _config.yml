@@ -4,6 +4,23 @@ email:
 description: "Always seek after truth."
 baseurl: ""
 url: "http://dynmi.github.io"
+lang: zh-CN            # 页面默认语言；英文文章在 front matter 写 lang: en
+
+# 所有文章默认用统一模板 _layouts/post.html，新文章不用再写 layout
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post
+
+# 不发布到站点的目录（tools/ 是写作脚本）
+exclude:
+  - tools
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
 
 # Build settings
 markdown: kramdown

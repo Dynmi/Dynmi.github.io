@@ -2,9 +2,9 @@
 layout: post
 comments: true
 title:  "the Architecture of MultiTasking in Linux"
-excerpt: "..."
 date:   2022-01-07 11:10:00
 mathjax: true
+lang: zh
 ---
 
 ## linux进程和线程的关系

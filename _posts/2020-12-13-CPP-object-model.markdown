@@ -2,9 +2,9 @@
 layout: post
 comments: true
 title:  "Memory Management of C++ Object Model"
-excerpt: "..."
 date:   2021-12-13 23:40
 mathjax: false
+lang: zh
 ---
 
 C++是一门支持面向对象的高级语言。那C++对象的内存是怎么管理的呢？

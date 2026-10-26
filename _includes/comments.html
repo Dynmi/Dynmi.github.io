@@ -1,0 +1,18 @@
+<!-- Gitalk 评论（front matter: comments: true） -->
+<section class="comments">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.css">
+  <div id="gitalk_container"></div>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js"></script>
+  <script>
+   const gitalk = new Gitalk({
+     clientID: 'b47f56c253316613f70e',
+     clientSecret: '94ddc703708b8b274c3fbb2156385d149bf3ecb2',
+     owner: 'Dynmi',
+     repo: 'Dynmi.github.io',
+     admin: ['Dynmi'],
+     id: location.pathname,      // Ensure uniqueness and length less than 50
+     distractionFreeMode: false  // Facebook-like distraction free mode
+   })
+   gitalk.render('gitalk_container')
+  </script>
+</section>

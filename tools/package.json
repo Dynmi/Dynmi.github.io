@@ -1,8 +1,0 @@
-{
-  "name": "blog-post-builder",
-  "private": true,
-  "type": "module",
-  "dependencies": {
-    "marked": "^16.0.0"
-  }
-}
